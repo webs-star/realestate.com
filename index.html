@@ -126,7 +126,7 @@
     authDomain: "realestate-afbe6.firebaseapp.com",
     databaseURL: "https://realestate-afbe6-default-rtdb.firebaseio.com",
     projectId: "realestate-afbe6",
-    storageBucket: "realestate-afbe6.firebasestorage.app",
+    storageBucket: "realestate-afbe6.appspot.com",
     messagingSenderId: "202970291965",
     appId: "1:202970291965:web:baaf253d6c9a8685c5e894",
     measurementId: "G-S0GB80V66F"
@@ -135,14 +135,16 @@
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
 
-  let map = L.map('map').setView([-1.2921, 36.8219], 6); // Center on Nairobi/Kenya
+  let map = L.map('map').setView([-1.2921, 36.8219], 6);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
   let markers = [];
   let routingControl;
+  let userWatcherId;
+  let currentUserLatLng;
   const myPhone = localStorage.getItem("myPhone") || "";
 
-  // Submit listing
+  // Share / update location
   window.shareLocation = async function () {
     navigator.geolocation.getCurrentPosition(async (pos) => {
       const lat = pos.coords.latitude;
@@ -173,7 +175,7 @@
     }, () => alert("❌ Location access denied."));
   };
 
-  // Load & filter
+  // Load & filter properties
   async function loadMarkers() {
     const filterType = document.getElementById("filterType").value;
     const filterCounty = document.getElementById("filterCounty").value;
@@ -210,7 +212,8 @@
         💰 KES ${d.price}<br>
         📞 ${d.phone}<br>
         📝 ${d.description}<br>
-        📌 ${d.status}`;
+        📌 ${d.status}<br><br>
+        <button id="dir-btn-${d.phone}">📍 Get Directions</button>`;
 
       if (d.phone === myPhone) {
         popupHtml += `
@@ -221,6 +224,13 @@
       }
 
       marker.bindPopup(popupHtml);
+      marker.on("popupopen", () => {
+        const btn = document.getElementById(`dir-btn-${d.phone}`);
+        if (btn) {
+          btn.addEventListener("click", () => getDirections(d.lat, d.lng));
+        }
+      });
+
       markers.push(marker);
 
       const opt = document.createElement("option");
@@ -255,13 +265,6 @@
     if (!val) return;
     const [lat, lng] = val.split(",").map(parseFloat);
     map.setView([lat, lng], 16);
-
-    if (routingControl) map.removeControl(routingControl);
-    routingControl = L.Routing.control({
-      waypoints: [
-        L.latLng(lat, lng)
-      ]
-    }).addTo(map);
   };
 
   window.editMyLocation = async function (phone) {
@@ -286,9 +289,32 @@
     }
   };
 
-  // Load everything on start
+  function getDirections(destLat, destLng) {
+    if (routingControl) map.removeControl(routingControl);
+    if (userWatcherId) navigator.geolocation.clearWatch(userWatcherId);
+
+    userWatcherId = navigator.geolocation.watchPosition(pos => {
+      currentUserLatLng = L.latLng(pos.coords.latitude, pos.coords.longitude);
+      routingControl = L.Routing.control({
+        waypoints: [currentUserLatLng, L.latLng(destLat, destLng)],
+        routeWhileDragging: false,
+        show: false,
+      }).addTo(map);
+      map.setView(currentUserLatLng, 14);
+    }, err => {
+      alert("❌ Could not access your location.");
+    }, {
+      enableHighAccuracy: true,
+      maximumAge: 0,
+      timeout: 10000
+    });
+  }
+
   loadMarkers();
 </script>
 
 </body>
 </html>
+
+
+  
