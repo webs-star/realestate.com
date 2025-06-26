@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>RealPlot Connect – Customer View</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css" />
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 10px;
+      background: #f9f9f9;
+      text-align: center;
+    }
+
+    #map {
+      height: 55vh;
+      border-radius: 10px;
+      margin-bottom: 10px;
+    }
+
+    .inline {
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      width: 95%;
+      margin: auto;
+    }
+
+    select, input, button {
+      padding: 10px;
+      width: 32%;
+      margin: 5px 0;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+    }
+
+    button {
+      background: #4CAF50;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #45a049;
+    }
+
+    #voiceToggle {
+      margin-top: 10px;
+      width: 60%;
+    }
+  </style>
+</head>
+<body>
+
+<h2>🏠 RealPlot Connect – View Properties</h2>
+
+<div class="inline">
+  <select id="filterType" onchange="loadMarkers()">
+    <option value="All">All Property Types</option>
+  </select>
+
+  <select id="filterCounty" onchange="loadMarkers()">
+    <option value="All">All Counties</option>
+  </select>
+
+  <select id="filterLocation" onchange="loadMarkers()">
+    <option value="All">All Locations</option>
+  </select>
+</div>
+
+<div class="inline">
+  <input id="minPrice" type="number" placeholder="Min Price (KES)">
+  <input id="maxPrice" type="number" placeholder="Max Price (KES)">
+  <button onclick="loadMarkers(true)">Search by Cost</button>
+</div>
+
+<select id="userSelect" onchange="zoomToUser(this.value)">
+  <option value="">-- Select Property --</option>
+</select>
+
+<select id="voiceToggle">
+  <option value="en-US">🗣️ English Voice</option>
+  <option value="sw">🗣️ Kiswahili Voice</option>
+</select>
+
+<div id="map"></div>
+
+<!-- Scripts -->
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.min.js"></script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
+import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-database.js";
+
+const app = initializeApp({
+  apiKey: "AIzaSyDLTAd2u0IlhA4Gm4-0tTSzLUDHFYj045g",
+  authDomain: "realestate-afbe6.firebaseapp.com",
+  databaseURL: "https://realestate-afbe6-default-rtdb.firebaseio.com",
+  projectId: "realestate-afbe6",
+  storageBucket: "realestate-afbe6.appspot.com",
+  messagingSenderId: "202970291965",
+  appId: "1:202970291965:web:baaf253d6c9a8685c5e894"
+});
+
+const db = getDatabase(app);
+
+let map = L.map('map').setView([-1.2921, 36.8219], 7);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+let markers = [];
+let routingControl;
+let userWatcherId;
+let routeInstructions = [];
+let spokenSteps = new Set();
+let currentUserLatLng;
+
+function speak(text) {
+  const lang = document.getElementById("voiceToggle").value;
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.lang = lang === 'sw' ? 'sw' : 'en-US';
+  utter.rate = 1; utter.pitch = 1;
+  speechSynthesis.speak(utter);
+}
+
+window.getDirections = function (destLat, destLng) {
+  if (routingControl) map.removeControl(routingControl);
+  if (userWatcherId) navigator.geolocation.clearWatch(userWatcherId);
+
+  spokenSteps = new Set();
+
+  routingControl = L.Routing.control({
+    waypoints: [L.latLng(currentUserLatLng || [0, 0]), L.latLng(destLat, destLng)],
+    routeWhileDragging: false,
+    show: true,
+    collapsible: true
+  }).addTo(map);
+
+  routingControl.on('routesfound', e => {
+    routeInstructions = e.routes[0].instructions;
+    spokenSteps.clear();
+  });
+
+  userWatcherId = navigator.geolocation.watchPosition(pos => {
+    currentUserLatLng = L.latLng(pos.coords.latitude, pos.coords.longitude);
+    map.setView(currentUserLatLng, 14);
+
+    routingControl.setWaypoints([currentUserLatLng, L.latLng(destLat, destLng)]);
+
+    for (let step of routeInstructions) {
+      const stepLatLng = L.latLng(step.lat, step.lng);
+      if (currentUserLatLng.distanceTo(stepLatLng) < 25 && !spokenSteps.has(step.text)) {
+        spokenSteps.add(step.text);
+        speak(step.text);
+        break;
+      }
+    }
+  }, () => alert("Could not get your location."), {
+    enableHighAccuracy: true,
+    maximumAge: 0,
+    timeout: 10000
+  });
+};
+
+window.zoomToUser = function (val) {
+  if (!val) return;
+  const [lat, lng] = val.split(",").map(parseFloat);
+  map.setView([lat, lng], 16);
+};
+
+window.loadMarkers = async function (triggeredBySearch = false) {
+  const filterType = document.getElementById("filterType").value;
+  const filterCounty = document.getElementById("filterCounty").value;
+  const filterLocation = document.getElementById("filterLocation").value;
+  const minPrice = parseFloat(document.getElementById("minPrice").value) || null;
+  const maxPrice = parseFloat(document.getElementById("maxPrice").value) || null;
+
+  const dropdown = document.getElementById("userSelect");
+  dropdown.innerHTML = `<option value="">-- Select Property --</option>`;
+
+  markers.forEach(m => map.removeLayer(m));
+  markers = [];
+
+  const snap = await get(ref(db, "properties"));
+  if (!snap.exists()) return;
+
+  const types = new Set(), counties = new Set(), locations = new Set();
+  let foundResults = false;
+
+  snap.forEach(child => {
+    const d = child.val();
+    types.add(d.propertyType);
+    counties.add(d.county);
+    locations.add(d.location);
+
+    if ((filterType !== "All" && d.propertyType !== filterType) ||
+        (filterCounty !== "All" && d.county !== filterCounty) ||
+        (filterLocation !== "All" && d.location !== filterLocation)) return;
+
+    const cleanPrice = Number(String(d.price).replace(/[^0-9.]/g, ''));
+    if (triggeredBySearch) {
+      if ((minPrice && cleanPrice < minPrice) || (maxPrice && cleanPrice > maxPrice)) return;
+    }
+
+    const marker = L.marker([d.lat, d.lng]).addTo(map);
+    marker.bindPopup(`
+      <b>${d.propertyType}</b><br>
+      🧑 ${d.ownerName}<br>
+      📍 ${d.county}, ${d.location}<br>
+      💰 KES ${d.price}<br>
+      📞 ${d.phone}<br>
+      📝 ${d.description}<br>
+      📌 ${d.status}<br><br>
+      <button onclick="getDirections(${d.lat}, ${d.lng})">📍 Get Directions</button>
+    `);
+    markers.push(marker);
+
+    const opt = document.createElement("option");
+    opt.value = `${d.lat},${d.lng}`;
+    opt.textContent = `${d.propertyType} – ${d.county}, ${d.location}`;
+    dropdown.appendChild(opt);
+    foundResults = true;
+  });
+
+  updateSelect("filterType", types, filterType);
+  updateSelect("filterCounty", counties, filterCounty);
+  updateSelect("filterLocation", locations, filterLocation);
+
+  if (!foundResults) alert("❌ No matching listings found.");
+};
+
+function updateSelect(id, values, current) {
+  const select = document.getElementById(id);
+  select.innerHTML = `<option value="All">All</option>`;
+  Array.from(values).sort().forEach(v => {
+    const opt = document.createElement("option");
+    opt.value = v;
+    opt.textContent = v;
+    select.appendChild(opt);
+  });
+  select.value = current;
+}
+
+navigator.geolocation.getCurrentPosition(pos => {
+  currentUserLatLng = L.latLng(pos.coords.latitude, pos.coords.longitude);
+}, () => alert("Allow location to get directions."));
+
+loadMarkers();
+</script>
+
+</body>
+</html>
