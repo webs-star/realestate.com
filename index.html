@@ -97,11 +97,9 @@
   <select id="filterType" onchange="loadMarkers()">
     <option value="All">All Property Types</option>
   </select>
-
   <select id="filterCounty" onchange="loadMarkers()">
     <option value="All">All Counties</option>
   </select>
-
   <select id="filterLocation" onchange="loadMarkers()">
     <option value="All">All Locations</option>
   </select>
@@ -140,11 +138,9 @@
 
   let markers = [];
   let routingControl;
-  let userWatcherId;
   let currentUserLatLng;
   const myPhone = localStorage.getItem("myPhone") || "";
 
-  // Share / update location
   window.shareLocation = async function () {
     navigator.geolocation.getCurrentPosition(async (pos) => {
       const lat = pos.coords.latitude;
@@ -175,15 +171,12 @@
     }, () => alert("❌ Location access denied."));
   };
 
-  // Load & filter properties
   async function loadMarkers() {
     const filterType = document.getElementById("filterType").value;
     const filterCounty = document.getElementById("filterCounty").value;
     const filterLocation = document.getElementById("filterLocation").value;
-
     const dropdown = document.getElementById("userSelect");
     dropdown.innerHTML = `<option value="">-- Select Property --</option>`;
-
     markers.forEach(m => map.removeLayer(m));
     markers = [];
 
@@ -213,7 +206,7 @@
         📞 ${d.phone}<br>
         📝 ${d.description}<br>
         📌 ${d.status}<br><br>
-        <button id="dir-btn-${d.phone}">📍 Get Directions</button>`;
+        <button onclick="getDirections(${d.lat}, ${d.lng})">📍 Get Directions</button>`;
 
       if (d.phone === myPhone) {
         popupHtml += `
@@ -224,13 +217,6 @@
       }
 
       marker.bindPopup(popupHtml);
-      marker.on("popupopen", () => {
-        const btn = document.getElementById(`dir-btn-${d.phone}`);
-        if (btn) {
-          btn.addEventListener("click", () => getDirections(d.lat, d.lng));
-        }
-      });
-
       markers.push(marker);
 
       const opt = document.createElement("option");
@@ -239,10 +225,6 @@
       dropdown.appendChild(opt);
     });
 
-    updateFilters(types, counties, locations);
-  }
-
-  function updateFilters(types, counties, locations) {
     updateSelect("filterType", types);
     updateSelect("filterCounty", counties);
     updateSelect("filterLocation", locations);
@@ -267,6 +249,25 @@
     map.setView([lat, lng], 16);
   };
 
+  window.getDirections = function (destLat, destLng) {
+    navigator.geolocation.getCurrentPosition(pos => {
+      const start = L.latLng(pos.coords.latitude, pos.coords.longitude);
+      const end = L.latLng(destLat, destLng);
+      if (routingControl) map.removeControl(routingControl);
+      routingControl = L.Routing.control({
+        waypoints: [start, end],
+        routeWhileDragging: false
+      }).addTo(map);
+      map.setView(start, 14);
+    }, () => {
+      alert("❌ Could not access your location for directions.");
+    }, {
+      enableHighAccuracy: true,
+      timeout: 15000,
+      maximumAge: 0
+    });
+  };
+
   window.editMyLocation = async function (phone) {
     const snap = await get(ref(db, "properties/" + phone.replace(/[^0-9]/g, "")));
     if (!snap.exists()) return;
@@ -289,29 +290,7 @@
     }
   };
 
-  function getDirections(destLat, destLng) {
-    if (routingControl) map.removeControl(routingControl);
-    if (userWatcherId) navigator.geolocation.clearWatch(userWatcherId);
-
-    userWatcherId = navigator.geolocation.watchPosition(pos => {
-      currentUserLatLng = L.latLng(pos.coords.latitude, pos.coords.longitude);
-      routingControl = L.Routing.control({
-        waypoints: [currentUserLatLng, L.latLng(destLat, destLng)],
-        routeWhileDragging: false,
-        show: false,
-      }).addTo(map);
-      map.setView(currentUserLatLng, 14);
-    }, err => {
-      alert("❌ Could not access your location.");
-    }, {
-      enableHighAccuracy: true,
-      maximumAge: 0,
-      timeout: 10000
-    });
-  }
-
   loadMarkers();
 </script>
-
 </body>
 </html>
