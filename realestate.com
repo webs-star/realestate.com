@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>RealPlot Connect – Property Listings</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css" />
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 10px;
+      text-align: center;
+      background: #f9f9f9;
+    }
+
+    #map {
+      height: 50vh;
+      border-radius: 10px;
+      margin-bottom: 10px;
+    }
+
+    input, select, textarea, button {
+      padding: 10px;
+      width: 90%;
+      margin: 5px auto;
+      display: block;
+      border-radius: 8px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      background: #4CAF50;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #45a049;
+    }
+
+    .inline {
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      width: 95%;
+      margin: auto;
+    }
+
+    .inline select {
+      width: 32%;
+      margin-top: 5px;
+    }
+
+    .owner-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 5px;
+    }
+
+    .owner-buttons button {
+      background-color: #e91e63;
+    }
+
+    .owner-buttons button.edit {
+      background-color: #2196F3;
+    }
+  </style>
+</head>
+<body>
+
+<h3>🏠 RealPlot Connect – Kenya Property Listings</h3>
+
+<!-- INPUT FIELDS -->
+<input id="ownerName" type="text" placeholder="Owner Name" />
+<input id="propertyType" type="text" placeholder="Property Type (e.g., Plot, Apartment)" />
+<input id="county" type="text" placeholder="County (e.g., Nairobi)" />
+<input id="location" type="text" placeholder="Location (e.g., Westlands)" />
+<input id="price" type="text" placeholder="Price in KES" />
+<input id="phone" type="text" placeholder="Contact Phone Number" />
+<select id="status">
+  <option value="For Sale">For Sale</option>
+  <option value="To Let">To Let</option>
+</select>
+<textarea id="description" rows="3" placeholder="Short description of the property"></textarea>
+
+<button onclick="shareLocation()">📤 Share / Update Property Location</button>
+
+<!-- FILTERING -->
+<div class="inline">
+  <select id="filterType" onchange="loadMarkers()">
+    <option value="All">All Property Types</option>
+  </select>
+
+  <select id="filterCounty" onchange="loadMarkers()">
+    <option value="All">All Counties</option>
+  </select>
+
+  <select id="filterLocation" onchange="loadMarkers()">
+    <option value="All">All Locations</option>
+  </select>
+</div>
+
+<select id="userSelect" onchange="zoomToUser(this.value)">
+  <option value="">-- Select Property --</option>
+</select>
+
+<div id="map"></div>
+
+<!-- Leaflet and Firebase -->
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.min.js"></script>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
+  import { getDatabase, ref, set, get, remove } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyDLTAd2u0IlhA4Gm4-0tTSzLUDHFYj045g",
+    authDomain: "realestate-afbe6.firebaseapp.com",
+    databaseURL: "https://realestate-afbe6-default-rtdb.firebaseio.com",
+    projectId: "realestate-afbe6",
+    storageBucket: "realestate-afbe6.firebasestorage.app",
+    messagingSenderId: "202970291965",
+    appId: "1:202970291965:web:baaf253d6c9a8685c5e894",
+    measurementId: "G-S0GB80V66F"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  let map = L.map('map').setView([-1.2921, 36.8219], 6); // Center on Nairobi/Kenya
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+  let markers = [];
+  let routingControl;
+  const myPhone = localStorage.getItem("myPhone") || "";
+
+  // Submit listing
+  window.shareLocation = async function () {
+    navigator.geolocation.getCurrentPosition(async (pos) => {
+      const lat = pos.coords.latitude;
+      const lng = pos.coords.longitude;
+
+      const ownerName = document.getElementById("ownerName").value.trim();
+      const propertyType = document.getElementById("propertyType").value.trim();
+      const county = document.getElementById("county").value.trim();
+      const location = document.getElementById("location").value.trim();
+      const price = document.getElementById("price").value.trim();
+      const phone = document.getElementById("phone").value.trim();
+      const status = document.getElementById("status").value;
+      const description = document.getElementById("description").value.trim();
+
+      if (!ownerName || !propertyType || !county || !location || !price || !phone) {
+        return alert("Please fill all fields.");
+      }
+
+      const userId = phone.replace(/[^0-9]/g, "");
+      localStorage.setItem("myPhone", phone);
+
+      await set(ref(db, "properties/" + userId), {
+        ownerName, propertyType, county, location, price, phone, status, description, lat, lng
+      });
+
+      alert("✅ Property saved!");
+      loadMarkers();
+    }, () => alert("❌ Location access denied."));
+  };
+
+  // Load & filter
+  async function loadMarkers() {
+    const filterType = document.getElementById("filterType").value;
+    const filterCounty = document.getElementById("filterCounty").value;
+    const filterLocation = document.getElementById("filterLocation").value;
+
+    const dropdown = document.getElementById("userSelect");
+    dropdown.innerHTML = `<option value="">-- Select Property --</option>`;
+
+    markers.forEach(m => map.removeLayer(m));
+    markers = [];
+
+    const snap = await get(ref(db, "properties"));
+    if (!snap.exists()) return;
+
+    const types = new Set(), counties = new Set(), locations = new Set();
+
+    snap.forEach(child => {
+      const d = child.val();
+      types.add(d.propertyType);
+      counties.add(d.county);
+      locations.add(d.location);
+
+      if (
+        (filterType !== "All" && d.propertyType !== filterType) ||
+        (filterCounty !== "All" && d.county !== filterCounty) ||
+        (filterLocation !== "All" && d.location !== filterLocation)
+      ) return;
+
+      const marker = L.marker([d.lat, d.lng]).addTo(map);
+      let popupHtml = `
+        <b>${d.propertyType}</b><br>
+        🧑 ${d.ownerName}<br>
+        📍 ${d.county}, ${d.location}<br>
+        💰 KES ${d.price}<br>
+        📞 ${d.phone}<br>
+        📝 ${d.description}<br>
+        📌 ${d.status}`;
+
+      if (d.phone === myPhone) {
+        popupHtml += `
+          <div class="owner-buttons">
+            <button class="edit" onclick="editMyLocation('${d.phone}')">✏️ Edit</button>
+            <button onclick="deleteMyLocation('${d.phone}')">🗑️ Delete</button>
+          </div>`;
+      }
+
+      marker.bindPopup(popupHtml);
+      markers.push(marker);
+
+      const opt = document.createElement("option");
+      opt.value = `${d.lat},${d.lng}`;
+      opt.textContent = `${d.propertyType} – ${d.county}, ${d.location}`;
+      dropdown.appendChild(opt);
+    });
+
+    updateFilters(types, counties, locations);
+  }
+
+  function updateFilters(types, counties, locations) {
+    updateSelect("filterType", types);
+    updateSelect("filterCounty", counties);
+    updateSelect("filterLocation", locations);
+  }
+
+  function updateSelect(id, values) {
+    const select = document.getElementById(id);
+    const current = select.value;
+    select.innerHTML = `<option value="All">All</option>`;
+    Array.from(values).sort().forEach(v => {
+      const opt = document.createElement("option");
+      opt.value = v;
+      opt.textContent = v;
+      select.appendChild(opt);
+    });
+    if (values.has(current)) select.value = current;
+  }
+
+  window.zoomToUser = function (val) {
+    if (!val) return;
+    const [lat, lng] = val.split(",").map(parseFloat);
+    map.setView([lat, lng], 16);
+
+    if (routingControl) map.removeControl(routingControl);
+    routingControl = L.Routing.control({
+      waypoints: [
+        L.latLng(lat, lng)
+      ]
+    }).addTo(map);
+  };
+
+  window.editMyLocation = async function (phone) {
+    const snap = await get(ref(db, "properties/" + phone.replace(/[^0-9]/g, "")));
+    if (!snap.exists()) return;
+    const d = snap.val();
+    document.getElementById("ownerName").value = d.ownerName;
+    document.getElementById("propertyType").value = d.propertyType;
+    document.getElementById("county").value = d.county;
+    document.getElementById("location").value = d.location;
+    document.getElementById("price").value = d.price;
+    document.getElementById("phone").value = d.phone;
+    document.getElementById("status").value = d.status;
+    document.getElementById("description").value = d.description || '';
+  };
+
+  window.deleteMyLocation = async function (phone) {
+    if (confirm("Delete this listing?")) {
+      await remove(ref(db, "properties/" + phone.replace(/[^0-9]/g, "")));
+      alert("❌ Listing deleted.");
+      loadMarkers();
+    }
+  };
+
+  // Load everything on start
+  loadMarkers();
+</script>
+
+</body>
+</html>
