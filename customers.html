@@ -44,67 +44,45 @@
       width: 100%; margin-bottom: 10px; border-radius: 10px;
     }
    
-	 #listings {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 20px;
-      margin-top: 40px;
-    }
-    .listing-card {
-      background: #fff;
-      border-radius: 10px;
-      padding: 15px;
-      width: 300px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-    }
-    .listing-card img {
-      width: 100%;
-      height: 180px;
-      object-fit: cover;
-      border-radius: 8px;
-      margin-bottom: 10px;
-    }
-    .listing-card button {
-      margin-top: 8px;
-      padding: 8px;
-      border: none;
-      border-radius: 5px;
-      font-size: 14px;
-      cursor: pointer;
-	
-	
-	
-	.listing-card h4 {
-  color: #111; /* Darker */
+   
+   #listings {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 40px;
+}
+
+.listing-card {
+  background: #fff;
+  border-radius: 10px;
+  padding: 15px;
+  width: 300px;
+  height: 500px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+  color: #111;
+}
+
+.listing-card img {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-bottom: 10px;
+}
+
+.listing-card h4 {
+  color: #111;
 }
 
 .listing-card p {
-  color: #222; /* More visible */
+  color: #222;
 }
 
-.listing-card .description {
-  color: #000;
-  background-color: #f0f0f0; /* Slightly darker background for better contrast */
-
-
-  white-space: pre-wrap; /* Keeps line breaks from textarea */
-  max-height: 100px;
-  overflow-y: auto;
-}
-
-	.listing-card .description::-webkit-scrollbar {
-  width: 6px;
-}
-
-.listing-card .description::-webkit-scrollbar-thumb {
-  background: #ccc;
-  border-radius: 10px;
-}
-
-	.listing-card {
-  color: #111;
-}
 .listing-card strong {
   color: #000;
   font-weight: bold;
@@ -114,7 +92,36 @@
   font-weight: bold;
   color: #000;
 }
-	
+
+.listing-card .description {
+  background-color: #f0f0f0;
+  color: #000;
+  white-space: pre-wrap;
+  max-height: 100px;
+  overflow-y: auto;
+  padding: 8px;
+  border-radius: 5px;
+  margin-top: 10px;
+}
+
+.listing-card button {
+  margin-top: 8px;
+  padding: 8px;
+  border: none;
+  border-radius: 5px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+  .listing-card .description::-webkit-scrollbar {
+  width: 6px;
+}
+.listing-card .description::-webkit-scrollbar-thumb {
+  background-color: #999;
+  border-radius: 4px;
+}
+ 
+   
   </style>
 </head>
 <body>
@@ -218,7 +225,12 @@ card.className = "listing-card"; // <-- Add this line
          <p><strong>Type:</strong> <span class="bold-info">${item.type}</span></p>
   <p><strong>Location:</strong> ${item.location}</p>
   <p><strong>Price:</strong> <span class="bold-info">KES ${item.price}</span></p>
-  <p class="description">${item.description || ""}</p>
+ 
+ <ul class="description">
+  ${(item.description || "").split("\n").map(line => `<li>${line}</li>`).join("")}
+</ul>
+ 
+ 
   <p><strong>Contact:</strong> ${item.contact}</p>
       `;
 
