@@ -140,11 +140,15 @@
     });
 
     for (const [id, item] of sortedEntries) {
-      if (
-        (filterType && item.type !== filterType) ||
-        (filterLocation && item.location !== filterLocation) ||
-        (item.price < minPrice || item.price > maxPrice)
-      ) continue;
+     const itemLocation = (item.location || "").toLowerCase().trim();
+const filterLoc = filterLocation.toLowerCase().trim();
+
+if (
+  (filterType && item.type !== filterType) ||
+  (filterLocation && itemLocation !== filterLoc) ||
+  (item.price < minPrice || item.price > maxPrice)
+) continue;
+
 
       const card = document.createElement("div");
       card.className = "card";
