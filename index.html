@@ -325,6 +325,7 @@
 <div id="listings"></div>
 
 <!-- Firebase + Cloudinary Setup -->
+<!-- Firebase + Cloudinary Config -->
 <script>
   const firebaseConfig = {
     apiKey: "AIzaSyDLTAd2u0IlhA4Gm4-0tTSzLUDHFYj045g",
@@ -335,29 +336,37 @@
     messagingSenderId: "202970291965",
     appId: "1:202970291965:web:baaf253d6c9a8685c5e894"
   };
+
   firebase.initializeApp(firebaseConfig);
   const db = firebase.database();
 
-  // Cloudinary setup
+  // Cloudinary config
   const cloudName = "dwvt4e9o2";
   const uploadPreset = "unsigned_upload";
 </script>
 
+<!-- Axios + Leaflet + Routing -->
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.min.js"></script>
+
+<!-- App Logic -->
 <script>
   const form = document.getElementById("uploadForm");
   const imageInput = document.getElementById("images");
   const previewContainer = document.getElementById("previewContainer");
   const loading = document.getElementById("loading");
+  const listingsDiv = document.getElementById("listings");
 
   let imageURLs = [], isSubmitting = false, currentUserLatLng = null;
 
-  // Try getting user's location for directions
+  // Try to get user's location
   navigator.geolocation.getCurrentPosition(
     pos => currentUserLatLng = L.latLng(pos.coords.latitude, pos.coords.longitude),
-    () => console.warn("Geolocation blocked")
+    () => console.warn("Geolocation permission denied.")
   );
 
-  // Handle image preview and enforce max 3 images
+  // Preview up to 3 images
   imageInput.addEventListener("change", () => {
     const files = [...imageInput.files];
     previewContainer.innerHTML = "";
@@ -381,7 +390,7 @@
     });
   });
 
-  // Upload form submission
+  // Form Submission: Upload images to Cloudinary, then data to Firebase
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     if (isSubmitting) return;
@@ -436,8 +445,7 @@
     }
   });
 
-  // Show live listings
-  const listingsDiv = document.getElementById("listings");
+  // Live listings display
   db.ref("listings").on("value", (snapshot) => {
     const data = snapshot.val() || {};
     listingsDiv.innerHTML = "";
@@ -448,15 +456,14 @@
       card.className = "card";
 
       card.innerHTML = `
-        <p><strong>Type:</strong> ${item.type}</p>
-        <p><strong>Location:</strong> ${item.location}</p>
-        <p><strong>Price:</strong> KES ${item.price}</p>
-        <p>${item.description}</p>
-        <p><strong>Contact:</strong> ${item.contact}</p>
-        ${(item.images || []).map(url => `<img src="${url}" class="property" style="width:100px;margin:5px;border-radius:5px;">`).join("")}
+        <h4>📌 ${item.type} – ${item.location}</h4>
+        <p>💰 <strong>KES ${item.price}</strong></p>
+        <p>📞 ${item.contact}</p>
+        <p>📝 ${item.description || "No description provided"}</p>
+        <div>${(item.images || []).map(url => `<img src="${url}" class="property" style="width:100px;margin:5px;border-radius:5px;">`).join("")}</div>
       `;
 
-      // Show directions
+      // Show Directions
       if (item.lat != null && item.lng != null) {
         const mapContainerId = `map-${id}`;
         const mapBtn = document.createElement("button");
@@ -508,214 +515,7 @@
     }
   }
 
-  // Show map directions
-  function showMapForListing(destLat, destLng, containerId) {
-    const container = document.getElementById(containerId);
-    container.innerHTML = "";
-
-    const mapDiv = document.createElement("div");
-    mapDiv.style.height = "300px";
-    mapDiv.style.borderRadius = "10px";
-    container.appendChild(mapDiv);
-
-    const map = L.map(mapDiv).setView([destLat, destLng], 13);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-
-    L.Routing.control({
-      waypoints: [
-        currentUserLatLng || L.latLng(destLat - 0.01, destLng - 0.01),
-        L.latLng(destLat, destLng)
-      ],
-      routeWhileDragging: false,
-      collapsible: true
-    }).addTo(map);
-  }
-
-<!-- Firebase + Cloudinary Setup -->
-<script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyDLTAd2u0IlhA4Gm4-0tTSzLUDHFYj045g",
-    authDomain: "realestate-afbe6.firebaseapp.com",
-    databaseURL: "https://realestate-afbe6-default-rtdb.firebaseio.com",
-    projectId: "realestate-afbe6",
-    storageBucket: "realestate-afbe6.appspot.com",
-    messagingSenderId: "202970291965",
-    appId: "1:202970291965:web:baaf253d6c9a8685c5e894"
-  };
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.database();
-
-  // Cloudinary setup
-  const cloudName = "dwvt4e9o2";
-  const uploadPreset = "unsigned_upload";
-</script>
-
-<script>
-  const form = document.getElementById("uploadForm");
-  const imageInput = document.getElementById("images");
-  const previewContainer = document.getElementById("previewContainer");
-  const loading = document.getElementById("loading");
-
-  let imageURLs = [], isSubmitting = false, currentUserLatLng = null;
-
-  // Try getting user's location for directions
-  navigator.geolocation.getCurrentPosition(
-    pos => currentUserLatLng = L.latLng(pos.coords.latitude, pos.coords.longitude),
-    () => console.warn("Geolocation blocked")
-  );
-
-  // Handle image preview and enforce max 3 images
-  imageInput.addEventListener("change", () => {
-    const files = [...imageInput.files];
-    previewContainer.innerHTML = "";
-
-    if (files.length > 3) {
-      alert("⚠️ You can upload a maximum of 3 images.");
-      imageInput.value = "";
-      return;
-    }
-
-    files.forEach(file => {
-      const img = document.createElement("img");
-      img.src = URL.createObjectURL(file);
-      img.style.width = "100px";
-      img.style.height = "100px";
-      img.style.objectFit = "cover";
-      img.style.margin = "5px";
-      img.style.border = "1px solid #ccc";
-      img.style.borderRadius = "5px";
-      previewContainer.appendChild(img);
-    });
-  });
-
-  // Upload form submission
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    if (isSubmitting) return;
-
-    const files = [...imageInput.files];
-    if (files.length === 0 || files.length > 3) {
-      alert("⚠️ Please upload between 1 and 3 images.");
-      return;
-    }
-
-    isSubmitting = true;
-    loading.style.display = "block";
-
-    try {
-      imageURLs = [];
-
-      for (const file of files) {
-        const formData = new FormData();
-        formData.append("file", file);
-        formData.append("upload_preset", uploadPreset);
-        formData.append("folder", "listings");
-
-        const res = await axios.post(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, formData);
-        imageURLs.push(res.data.secure_url);
-      }
-
-      const { latitude: lat, longitude: lng } = currentUserLatLng || {};
-
-      const property = {
-        type: document.getElementById("type").value,
-        location: document.getElementById("location").value,
-        price: parseInt(document.getElementById("price").value),
-        contact: document.getElementById("contact").value,
-        description: document.getElementById("description").value,
-        images: imageURLs,
-        lat, lng,
-        timestamp: Date.now()
-      };
-
-      await db.ref("listings").push(property);
-
-      alert("✅ Listing uploaded successfully!");
-      form.reset();
-      previewContainer.innerHTML = "";
-
-    } catch (err) {
-      console.error(err);
-      alert("❌ Upload failed. Please try again.");
-    } finally {
-      isSubmitting = false;
-      loading.style.display = "none";
-    }
-  });
-
-  // Show live listings
-  const listingsDiv = document.getElementById("listings");
-  db.ref("listings").on("value", (snapshot) => {
-    const data = snapshot.val() || {};
-    listingsDiv.innerHTML = "";
-
-    for (const id in data) {
-      const item = data[id];
-      const card = document.createElement("div");
-      card.className = "card";
-
-      card.innerHTML = `
-        <p><strong>Type:</strong> ${item.type}</p>
-        <p><strong>Location:</strong> ${item.location}</p>
-        <p><strong>Price:</strong> KES ${item.price}</p>
-        <p>${item.description}</p>
-        <p><strong>Contact:</strong> ${item.contact}</p>
-        ${(item.images || []).map(url => `<img src="${url}" class="property" style="width:100px;margin:5px;border-radius:5px;">`).join("")}
-      `;
-
-      // Show directions
-      if (item.lat != null && item.lng != null) {
-        const mapContainerId = `map-${id}`;
-        const mapBtn = document.createElement("button");
-        mapBtn.textContent = "📍 Show Directions";
-        mapBtn.onclick = () => showMapForListing(item.lat, item.lng, mapContainerId);
-        const mapDiv = document.createElement("div");
-        mapDiv.id = mapContainerId;
-        mapDiv.style.marginTop = "10px";
-        card.appendChild(mapBtn);
-        card.appendChild(mapDiv);
-      }
-
-      // Edit button
-      const editBtn = document.createElement("button");
-      editBtn.textContent = "✏️ Edit";
-      editBtn.onclick = () => editListing(id, item);
-      card.appendChild(editBtn);
-
-      // Delete button
-      const delBtn = document.createElement("button");
-      delBtn.textContent = "🗑️ Delete";
-      delBtn.onclick = () => {
-        if (confirm("Are you sure you want to delete this listing?")) {
-          db.ref("listings/" + id).remove();
-        }
-      };
-      card.appendChild(delBtn);
-
-      listingsDiv.appendChild(card);
-    }
-  });
-
-  // Inline Edit Function
-  function editListing(id, data) {
-    const newType = prompt("Edit type", data.type);
-    const newLocation = prompt("Edit location", data.location);
-    const newPrice = prompt("Edit price", data.price);
-    const newContact = prompt("Edit contact", data.contact);
-    const newDescription = prompt("Edit description", data.description);
-
-    if (newType && newLocation && newPrice && newContact) {
-      db.ref("listings/" + id).update({
-        type: newType,
-        location: newLocation,
-        price: parseInt(newPrice),
-        contact: newContact,
-        description: newDescription
-      });
-    }
-  }
-
-  // Show map directions
+  // Show Map with Directions
   function showMapForListing(destLat, destLng, containerId) {
     const container = document.getElementById(containerId);
     container.innerHTML = "";
@@ -738,7 +538,7 @@
     }).addTo(map);
   }
 </script>
-
 
 </body>
 </html>
+
