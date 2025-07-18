@@ -1,285 +1,120 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Real Estate Marketplace</title>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <!-- Google Site Verification -->
-  <meta name="google-site-verification" content="ZuK2pvozDS96vm0_IRjSYEsTqSdC8FJCIgJdAitGf0U" />
-  <!-- SEO Metadata -->
-  <meta name="description" content="Use the RealPlot customer map to discover land and rental properties in Kenya. Apply filters and get voice-guided directions instantly." />
-  <meta name="keywords" content="real estate Kenya, land map Kenya, property listings, rentals, voice directions, RealPlot Connect, property map" />
-  <meta name="author" content="RealPlot Connect by Webs Star" />
-  <meta name="robots" content="index, follow" />
-  <!-- Open Graph Meta -->
-  <meta property="og:title" content="RealPlot Connect – Customer Property Finder" />
-  <meta property="og:description" content="Discover land, rentals, and houses near you using RealPlot’s live map. Voice-guided directions and filtering included." />
-  <meta property="og:url" content="https://webs-star.github.io/realestate.com/customers.html" />
-  <meta property="og:type" content="website" />
-  <meta property="og:image" content="https://your-site-preview-image.jpg" />
-  <link rel="icon" href="favicon.ico" />
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-  <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css" />
+  <title>RealPlot Connect</title>
+
+  <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+  <!-- Cloudinary + Axios -->
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+  <!-- Leaflet & Routing -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css" />
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.min.js"></script>
+
   <style>
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: #f4f4f4;
+      font-family: 'Segoe UI', sans-serif;
+      background: #f4f6f9;
+      margin: 0;
       padding: 20px;
-      color: #333;
     }
     h2 {
-      text-align: center;
-      margin-top: 30px;
-      font-size: 24px;
       color: #2c3e50;
+      text-align: center;
+      margin-bottom: 15px;
     }
-    form, .card, .filters, .ownerLogin {
-      background: white;
+    form {
+      background: #fff;
       padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-      max-width: 900px;
-      margin: 20px auto;
+      border-radius: 10px;
+      max-width: 700px;
+      margin: auto;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
     }
-    input, textarea, select, button {
+    form input, form select, form textarea, form button {
       width: 100%;
+      padding: 10px;
       margin-top: 10px;
-      padding: 12px;
+      font-size: 14px;
+      border-radius: 6px;
       border: 1px solid #ccc;
-      border-radius: 8px;
-      font-size: 16px;
     }
-    input:focus, textarea:focus, select:focus {
-      outline: none;
-      border-color: #2980b9;
-    }
-    button {
-      background-color: #3498db;
+    form button {
+      background-color: #007bff;
       color: white;
+      border: none;
       font-weight: bold;
       cursor: pointer;
-      transition: background 0.3s ease;
     }
-    button:hover {
-      background-color: #2980b9;
+    form button:hover {
+      background-color: #0056b3;
     }
     #previewContainer img {
       width: 100px;
-      margin: 5px;
-      border-radius: 5px;
+      height: 100px;
       object-fit: cover;
-      height: 80px;
+      border-radius: 6px;
+      margin: 5px;
+      border: 1px solid #ccc;
     }
-    img.property {
-      width: 100%;
-      margin-bottom: 10px;
-      border-radius: 10px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    #loading {
+      text-align: center;
+      font-weight: bold;
+      color: #ff6600;
+      margin-top: 10px;
+      display: none;
     }
     #listings {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
       gap: 20px;
-      padding: 10px;
+      margin-top: 40px;
     }
-    .card button {
-      margin-top: 10px;
+    .listing-card {
+      background: #fff;
+      border-radius: 10px;
+      padding: 15px;
+      width: 300px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
     }
-    .directions-text {
-      margin-top: 10px;
-      background: #eef9ff;
-      padding: 10px;
-      border-radius: 8px;
-      font-size: 14px;
-      color: #2c3e50;
-      white-space: pre-wrap;
-    }
-	
-	
-	
-	.note-box {
-  background: #fff7e6;
-  border-left: 6px solid #ffa500;
-  padding: 15px 20px;
-  margin: 20px 0;
-  border-radius: 10px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-  animation: fadeIn 1s ease-in-out;
-}
-
-.note-box h3 {
-  margin-top: 0;
-  color: #d35400;
-  font-size: 1.2rem;
-}
-
-.note-box ul {
-  padding-left: 1.2em;
-}
-
-.note-box li {
-  margin-bottom: 8px;
-}
-
-	
-	
-	
-	 body {
-    font-family: 'Segoe UI', sans-serif;
-    background: #f4f6f9;
-    margin: 0;
-    padding: 20px;
-  }
-
-  h2 {
-    color: #2c3e50;
-    text-align: center;
-    margin-bottom: 15px;
-  }
-
-  .upload-section {
-    background: #ffffff;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-    max-width: 700px;
-    margin: auto;
-  }
-
-  form select, form input, form textarea, form button {
-    width: 100%;
-    padding: 10px;
-    margin-top: 10px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    box-sizing: border-box;
-    font-size: 14px;
-  }
-
-  form button {
-    background-color: #007bff;
-    color: white;
-    font-weight: bold;
-    cursor: pointer;
-    margin-top: 15px;
-    transition: background 0.3s ease;
-  }
-
-  form button:hover {
-    background-color: #0056b3;
-  }
-
-  #loading {
-    text-align: center;
-    font-weight: bold;
-    color: #ff6600;
-    margin-top: 10px;
-    display: none;
-  }
-
-  .image-preview {
-    display: flex;
-    flex-wrap: wrap;
-    margin-top: 10px;
-    gap: 10px;
-  }
-
-  .image-preview img {
-    width: 100px;
-    height: 100px;
-    object-fit: cover;
-    border-radius: 8px;
-    border: 1px solid #ccc;
-  }
-
-  .listings {
-    margin-top: 40px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
-    justify-content: center;
-  }
-
-  .listing-card {
-    background: #fff;
-    border-radius: 10px;
-    padding: 15px;
-    width: 300px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-    transition: transform 0.2s;
-  }
-
-  .listing-card:hover {
-    transform: scale(1.02);
-  }
-
-  .listing-card img {
-    width: 100%;
-    height: 180px;
-    object-fit: cover;
-    border-radius: 8px;
-    margin-bottom: 10px;
-  }
-
-  .listing-card h4 {
-    margin: 0;
-    color: #333;
-  }
-
-  .listing-card p {
-    margin: 4px 0;
-    font-size: 14px;
-    color: #555;
-  }
-
-  .listing-card button {
-    margin-top: 10px;
-    padding: 8px 12px;
-    border: none;
-    border-radius: 6px;
-    background: #dc3545;
-    color: #fff;
-    font-size: 14px;
-    cursor: pointer;
-  }
-
-  .listing-card button.edit-btn {
-    background: #28a745;
-    margin-right: 10px;
-  }
-
-  @media (max-width: 600px) {
-    .upload-section, .listing-card {
+    .listing-card img {
       width: 100%;
+      height: 180px;
+      object-fit: cover;
+      border-radius: 8px;
+      margin-bottom: 10px;
     }
-  }
-	
-	
+    .listing-card button {
+      margin-top: 8px;
+      padding: 8px;
+      border: none;
+      border-radius: 5px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    .edit-btn {
+      background: #28a745;
+      color: white;
+      margin-right: 10px;
+    }
+    .delete-btn {
+      background: #dc3545;
+      color: white;
+    }
   </style>
 </head>
-
-<div class="note-box">
-  <h3>🏠 RealPlot Connect – Kenya Property Listings</h3>
-  <p><strong>NOTE:</strong></p>
-  <ul>
-    <li>1. Only list your property when you are very close to the property, since the map will save that location.</li>
-    <li>2. After the property is sold or leased, remember to delete the property to avoid unnecessary confusions.</li>
-    <li>3. Countercheck your listing on the map to see whether it displays correct information; if incorrect, edit.</li>
-  </ul>
-</div>
-
-
-
 
 <body>
 
 <h2>📤 Upload Property Listing</h2>
-
 <form id="uploadForm">
   <select id="type" required>
     <option value="">Select Property Type</option>
@@ -303,29 +138,22 @@
     <option value="resort">Resort / Hotel</option>
   </select>
 
-  <input type="text" id="location" placeholder="Location (County, Sub-county, Town)" required />
+  <input type="text" id="location" placeholder="Location (County, Town)" required />
   <input type="number" id="price" placeholder="Price (KES)" required />
   <input type="tel" id="contact" placeholder="Phone number" required />
-  <textarea id="description" placeholder="Description"></textarea>
+  <textarea id="description" placeholder="Description (optional)"></textarea>
 
-  <label><strong>Select up to 3 images:</strong></label>
   <input type="file" id="images" accept="image/*" multiple required />
-  <div style="font-size: 0.9em; color: #777; margin-bottom: 5px;">Max 3 images allowed</div>
+  <div style="font-size: 0.9em; color: #777;">Max 3 images</div>
+  <div id="previewContainer"></div>
 
-  <div id="previewContainer" style="display:flex; flex-wrap:wrap; gap:10px; margin-top:10px;"></div>
-  <div id="loading" style="display:none; text-align:center; font-weight:bold; margin-top:10px;">
-    ⏳ Uploading, please wait...
-  </div>
-  <button type="submit" id="submitBtn">Submit</button>
+  <div id="loading">⏳ Uploading...</div>
+  <button type="submit">Submit</button>
 </form>
 
-
-<!-- All Listings -->
-<h2>🏠 All Listings</h2>
+<h2>🏘️ All Listings</h2>
 <div id="listings"></div>
 
-<!-- Firebase + Cloudinary Setup -->
-<!-- Firebase + Cloudinary Config -->
 <script>
   const firebaseConfig = {
     apiKey: "AIzaSyDLTAd2u0IlhA4Gm4-0tTSzLUDHFYj045g",
@@ -336,209 +164,133 @@
     messagingSenderId: "202970291965",
     appId: "1:202970291965:web:baaf253d6c9a8685c5e894"
   };
-
   firebase.initializeApp(firebaseConfig);
   const db = firebase.database();
 
-  // Cloudinary config
   const cloudName = "dwvt4e9o2";
   const uploadPreset = "unsigned_upload";
-</script>
 
-<!-- Axios + Leaflet + Routing -->
-<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-<script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.min.js"></script>
-
-<!-- App Logic -->
-<script>
   const form = document.getElementById("uploadForm");
   const imageInput = document.getElementById("images");
   const previewContainer = document.getElementById("previewContainer");
-  const loading = document.getElementById("loading");
   const listingsDiv = document.getElementById("listings");
+  const loading = document.getElementById("loading");
 
-  let imageURLs = [], isSubmitting = false, currentUserLatLng = null;
+  let currentUserLatLng = null;
+  let userId = localStorage.getItem("realplot_user_id");
+  if (!userId) {
+    userId = "user_" + Date.now();
+    localStorage.setItem("realplot_user_id", userId);
+  }
 
-  // Try to get user's location
-  navigator.geolocation.getCurrentPosition(
-    pos => currentUserLatLng = L.latLng(pos.coords.latitude, pos.coords.longitude),
-    () => console.warn("Geolocation permission denied.")
-  );
+  navigator.geolocation.getCurrentPosition(pos => {
+    currentUserLatLng = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+  });
 
-  // Preview up to 3 images
   imageInput.addEventListener("change", () => {
     const files = [...imageInput.files];
     previewContainer.innerHTML = "";
-
     if (files.length > 3) {
-      alert("⚠️ You can upload a maximum of 3 images.");
+      alert("⚠️ You can upload up to 3 images.");
       imageInput.value = "";
       return;
     }
-
     files.forEach(file => {
       const img = document.createElement("img");
       img.src = URL.createObjectURL(file);
-      img.style.width = "100px";
-      img.style.height = "100px";
-      img.style.objectFit = "cover";
-      img.style.margin = "5px";
-      img.style.border = "1px solid #ccc";
-      img.style.borderRadius = "5px";
       previewContainer.appendChild(img);
     });
   });
 
-  // Form Submission: Upload images to Cloudinary, then data to Firebase
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
-    if (isSubmitting) return;
+    if (!currentUserLatLng) return alert("⚠️ Location not available.");
 
     const files = [...imageInput.files];
     if (files.length === 0 || files.length > 3) {
-      alert("⚠️ Please upload between 1 and 3 images.");
+      alert("Please select up to 3 images.");
       return;
     }
 
-    isSubmitting = true;
     loading.style.display = "block";
+    const imageURLs = [];
 
-    try {
-      imageURLs = [];
-
-      for (const file of files) {
-        const formData = new FormData();
-        formData.append("file", file);
-        formData.append("upload_preset", uploadPreset);
-        formData.append("folder", "listings");
-
-        const res = await axios.post(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, formData);
-        imageURLs.push(res.data.secure_url);
-      }
-
-      const { latitude: lat, longitude: lng } = currentUserLatLng || {};
-
-      const property = {
-        type: document.getElementById("type").value,
-        location: document.getElementById("location").value,
-        price: parseInt(document.getElementById("price").value),
-        contact: document.getElementById("contact").value,
-        description: document.getElementById("description").value,
-        images: imageURLs,
-        lat, lng,
-        timestamp: Date.now()
-      };
-
-      await db.ref("listings").push(property);
-
-      alert("✅ Listing uploaded successfully!");
-      form.reset();
-      previewContainer.innerHTML = "";
-
-    } catch (err) {
-      console.error(err);
-      alert("❌ Upload failed. Please try again.");
-    } finally {
-      isSubmitting = false;
-      loading.style.display = "none";
+    for (const file of files) {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("upload_preset", uploadPreset);
+      const res = await axios.post(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, formData);
+      imageURLs.push(res.data.secure_url);
     }
+
+    const data = {
+      type: document.getElementById("type").value,
+      location: document.getElementById("location").value,
+      price: parseInt(document.getElementById("price").value),
+      contact: document.getElementById("contact").value,
+      description: document.getElementById("description").value,
+      images: imageURLs,
+      lat: currentUserLatLng.lat,
+      lng: currentUserLatLng.lng,
+      userId,
+      timestamp: Date.now()
+    };
+
+    await db.ref("listings").push(data);
+    form.reset();
+    previewContainer.innerHTML = "";
+    loading.style.display = "none";
+    alert("✅ Listing uploaded!");
   });
 
-  // Live listings display
-  db.ref("listings").on("value", (snapshot) => {
-    const data = snapshot.val() || {};
+  db.ref("listings").on("value", (snap) => {
+    const listings = snap.val() || {};
     listingsDiv.innerHTML = "";
 
-    for (const id in data) {
-      const item = data[id];
-      const card = document.createElement("div");
-      card.className = "card";
+    for (const id in listings) {
+      const item = listings[id];
+      const div = document.createElement("div");
+      div.className = "listing-card";
 
-      card.innerHTML = `
-        <h4>📌 ${item.type} – ${item.location}</h4>
-        <p>💰 <strong>KES ${item.price}</strong></p>
-        <p>📞 ${item.contact}</p>
-        <p>📝 ${item.description || "No description provided"}</p>
-        <div>${(item.images || []).map(url => `<img src="${url}" class="property" style="width:100px;margin:5px;border-radius:5px;">`).join("")}</div>
+      const imagesHTML = item.images.map(url => `<img src="${url}" alt="property">`).join("");
+      div.innerHTML = `
+        ${imagesHTML}
+        <h4>${item.type} – KES ${item.price}</h4>
+        <p><strong>Location:</strong> ${item.location}</p>
+        <p><strong>Contact:</strong> ${item.contact}</p>
+        <p>${item.description || ""}</p>
       `;
 
-      // Show Directions
-      if (item.lat != null && item.lng != null) {
-        const mapContainerId = `map-${id}`;
-        const mapBtn = document.createElement("button");
-        mapBtn.textContent = "📍 Show Directions";
-        mapBtn.onclick = () => showMapForListing(item.lat, item.lng, mapContainerId);
-        const mapDiv = document.createElement("div");
-        mapDiv.id = mapContainerId;
-        mapDiv.style.marginTop = "10px";
-        card.appendChild(mapBtn);
-        card.appendChild(mapDiv);
+      if (item.userId === userId) {
+        const editBtn = document.createElement("button");
+        editBtn.textContent = "✏️ Edit";
+        editBtn.className = "edit-btn";
+        editBtn.onclick = () => {
+          const type = prompt("New type:", item.type);
+          const price = prompt("New price:", item.price);
+          if (type && price) {
+            db.ref("listings/" + id).update({ type, price: parseInt(price) });
+          }
+        };
+        div.appendChild(editBtn);
+
+        const delBtn = document.createElement("button");
+        delBtn.textContent = "🗑️ Delete";
+        delBtn.className = "delete-btn";
+        delBtn.onclick = () => {
+          if (confirm("Delete this listing?")) {
+            db.ref("listings/" + id).remove();
+          }
+        };
+        div.appendChild(delBtn);
       }
 
-      // Edit button
-      const editBtn = document.createElement("button");
-      editBtn.textContent = "✏️ Edit";
-      editBtn.onclick = () => editListing(id, item);
-      card.appendChild(editBtn);
-
-      // Delete button
-      const delBtn = document.createElement("button");
-      delBtn.textContent = "🗑️ Delete";
-      delBtn.onclick = () => {
-        if (confirm("Are you sure you want to delete this listing?")) {
-          db.ref("listings/" + id).remove();
-        }
-      };
-      card.appendChild(delBtn);
-
-      listingsDiv.appendChild(card);
+      listingsDiv.appendChild(div);
     }
   });
-
-  // Inline Edit Function
-  function editListing(id, data) {
-    const newType = prompt("Edit type", data.type);
-    const newLocation = prompt("Edit location", data.location);
-    const newPrice = prompt("Edit price", data.price);
-    const newContact = prompt("Edit contact", data.contact);
-    const newDescription = prompt("Edit description", data.description);
-
-    if (newType && newLocation && newPrice && newContact) {
-      db.ref("listings/" + id).update({
-        type: newType,
-        location: newLocation,
-        price: parseInt(newPrice),
-        contact: newContact,
-        description: newDescription
-      });
-    }
-  }
-
-  // Show Map with Directions
-  function showMapForListing(destLat, destLng, containerId) {
-    const container = document.getElementById(containerId);
-    container.innerHTML = "";
-
-    const mapDiv = document.createElement("div");
-    mapDiv.style.height = "300px";
-    mapDiv.style.borderRadius = "10px";
-    container.appendChild(mapDiv);
-
-    const map = L.map(mapDiv).setView([destLat, destLng], 13);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-
-    L.Routing.control({
-      waypoints: [
-        currentUserLatLng || L.latLng(destLat - 0.01, destLng - 0.01),
-        L.latLng(destLat, destLng)
-      ],
-      routeWhileDragging: false,
-      collapsible: true
-    }).addTo(map);
-  }
 </script>
-
 </body>
 </html>
+
+
 
