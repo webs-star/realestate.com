@@ -1,462 +1,379 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="utf-8" />
+  <title>Real Estate Marketplace</title>
+  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-
   <!-- Google Site Verification -->
   <meta name="google-site-verification" content="ZuK2pvozDS96vm0_IRjSYEsTqSdC8FJCIgJdAitGf0U" />
-
   <!-- SEO Metadata -->
-  <title>RealPlot Connect – List Property, Land, or Rentals in Kenya</title>
-  <meta name="description" content="Landowners and landlords in Kenya can list land, plots, or rentals on RealPlot Connect. Get your property shown on the live map with instant exposure." />
-  <meta name="keywords" content="list land Kenya, landlord listing, rental listing Kenya, real estate Kenya, RealPlot Connect, property map, land sale" />
+  <meta name="description" content="Use the RealPlot customer map to discover land and rental properties in Kenya. Apply filters and get voice-guided directions instantly." />
+  <meta name="keywords" content="real estate Kenya, land map Kenya, property listings, rentals, voice directions, RealPlot Connect, property map" />
   <meta name="author" content="RealPlot Connect by Webs Star" />
   <meta name="robots" content="index, follow" />
-
-  <!-- Open Graph Meta (for Social Sharing) -->
-  <meta property="og:title" content="RealPlot Connect – Property Listing Tool for Landowners" />
-  <meta property="og:description" content="Easily list your property for sale or rent in Kenya. Your land or rentals appear on our live map instantly with filters and directions." />
-  <meta property="og:url" content="https://webs-star.github.io/realestate.com/index.html" /> <!-- update if this file has a different name -->
+  <!-- Open Graph Meta -->
+  <meta property="og:title" content="RealPlot Connect – Customer Property Finder" />
+  <meta property="og:description" content="Discover land, rentals, and houses near you using RealPlot’s live map. Voice-guided directions and filtering included." />
+  <meta property="og:url" content="https://webs-star.github.io/realestate.com/customers.html" />
   <meta property="og:type" content="website" />
-  <meta property="og:image" content="https://your-site-preview-image.jpg" /> <!-- Replace with actual image URL -->
-
-  <!-- Favicon (optional) -->
+  <meta property="og:image" content="https://your-site-preview-image.jpg" />
   <link rel="icon" href="favicon.ico" />
-
-  <!-- Leaflet Map CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css" />
-
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.min.js"></script>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 10px;
-      background: #f9f9f9;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f4f4f4;
+      padding: 20px;
+      color: #333;
+    }
+    h2 {
       text-align: center;
+      margin-top: 30px;
+      font-size: 24px;
+      color: #2c3e50;
     }
-
-    #map {
-      height: 50vh;
-      border-radius: 10px;
-      margin-bottom: 10px;
+    form, .card, .filters, .ownerLogin {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      max-width: 900px;
+      margin: 20px auto;
     }
-
-    .leaflet-routing-container {
-      max-width: 95%;
-      margin: auto;
-    }
-
-    input, select, textarea, button {
-      padding: 10px;
-      width: 90%;
-      margin: 5px auto;
-      display: block;
+    input, textarea, select, button {
+      width: 100%;
+      margin-top: 10px;
+      padding: 12px;
+      border: 1px solid #ccc;
       border-radius: 8px;
       font-size: 16px;
-      border: 1px solid #ccc;
     }
-
+    input:focus, textarea:focus, select:focus {
+      outline: none;
+      border-color: #2980b9;
+    }
     button {
-      background: #4CAF50;
+      background-color: #3498db;
       color: white;
-      border: none;
+      font-weight: bold;
       cursor: pointer;
+      transition: background 0.3s ease;
     }
-
     button:hover {
-      background: #45a049;
+      background-color: #2980b9;
     }
-
-    .inline {
-      display: flex;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      width: 95%;
-      margin: auto;
+    #previewContainer img {
+      width: 100px;
+      margin: 5px;
+      border-radius: 5px;
+      object-fit: cover;
+      height: 80px;
     }
-
-    .inline select {
-      width: 32%;
-      margin-top: 5px;
+    img.property {
+      width: 100%;
+      margin-bottom: 10px;
+      border-radius: 10px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
-
-    .owner-buttons {
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-      margin-top: 5px;
+    #listings {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+      padding: 10px;
     }
-
-    .owner-buttons button {
-      background-color: #e91e63;
+    .card button {
+      margin-top: 10px;
     }
-
-    .owner-buttons button.edit {
-      background-color: #2196F3;
+    .directions-text {
+      margin-top: 10px;
+      background: #eef9ff;
+      padding: 10px;
+      border-radius: 8px;
+      font-size: 14px;
+      color: #2c3e50;
+      white-space: pre-wrap;
     }
+	
+	
+	
+	.note-box {
+  background: #fff7e6;
+  border-left: 6px solid #ffa500;
+  padding: 15px 20px;
+  margin: 20px 0;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  animation: fadeIn 1s ease-in-out;
+}
 
+.note-box h3 {
+  margin-top: 0;
+  color: #d35400;
+  font-size: 1.2rem;
+}
 
+.note-box ul {
+  padding-left: 1.2em;
+}
 
+.note-box li {
+  margin-bottom: 8px;
+}
 
-.note-box {
-    background-color: #ebf8ff; /* Light blue */
-    border-left: 5px solid #3182ce; /* Strong blue */
-    color: #2a4365; /* Deep blue text */
-    padding: 1rem;
-    margin-bottom: 1.5rem;
-    border-radius: 0.375rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    font-family: Arial, sans-serif;
-  }
-
-  .note-box h3 {
-    font-size: 1.5rem;
-    font-weight: bold;
-    margin-bottom: 0.5rem;
-  }
-
-  .note-box p {
-    font-weight: 600;
-    margin-bottom: 0.5rem;
-  }
-
-  .note-box ul {
-    padding-left: 1.5rem;
-    list-style-type: disc;
-  }
-
-  .note-box li {
-    margin-bottom: 0.5rem;
-    font-size: 1rem;
-  }
-    
+	
+	
+	
+	
+	
+	
   </style>
 </head>
-<body>
 
 <div class="note-box">
   <h3>🏠 RealPlot Connect – Kenya Property Listings</h3>
-  <p>NOTE:</p>
+  <p><strong>NOTE:</strong></p>
   <ul>
     <li>1. Only list your property when you are very close to the property, since the map will save that location.</li>
     <li>2. After the property is sold or leased, remember to delete the property to avoid unnecessary confusions.</li>
-    <li>3. Countercheck your listing on the map to see whether it displays correct information; if incorrect, edit </li>
+    <li>3. Countercheck your listing on the map to see whether it displays correct information; if incorrect, edit.</li>
   </ul>
 </div>
 
 
-<input id="ownerName" type="text" placeholder="Owner Name" />
-<input id="propertyType" type="text" placeholder="Property Type (e.g., Plot, Apartment)" />
-<input id="county" type="text" placeholder="County (e.g., Nairobi)" />
-<input id="location" type="text" placeholder="Location (e.g., Westlands)" />
-<input id="price" type="text" placeholder="Price in KES" />
-<input id="phone" type="text" placeholder="Contact Phone Number" />
-<select id="status">
-  <option value="For Sale">For Sale</option>
-  <option value="To Let">To Let</option>
-</select>
-<textarea id="description" rows="3" placeholder="Short description of the property"></textarea>
 
-<button onclick="shareLocation()">📤 Share / Update Property Location</button>
 
-<div class="inline">
-  <select id="filterType" onchange="loadMarkers()">
-    <option value="All">All Property Types</option>
+<body>
+
+
+
+
+
+<!-- Upload Form -->
+<h2>📤 Upload Property Listing</h2>
+<form id="uploadForm">
+  
+ 
+  
+  <select id="type" required>
+    <option value="">Select Property Type</option>
+    <option value="land">Land / Plots</option>
+    <option value="house">House</option>
+    <option value="apartment">Apartment / Flat</option>
+    <option value="bungalow">Bungalow</option>
+    <option value="maisonette">Maisonette</option>
+    <option value="bedsitter">Bedsitter</option>
+    <option value="single room">Single Room</option>
+    <option value="shop">Shop / Stall</option>
+    <option value="office">Office Space</option>
+    <option value="godown">Godown / Warehouse</option>
+    <option value="commercial building">Commercial Building</option>
+    <option value="leased">Leased Property</option>
+    <option value="rental">Rental Unit</option>
+    <option value="hostel">Student Hostel</option>
+    <option value="farm">Farm Land</option>
+    <option value="vacant land">Vacant Land</option>
+    <option value="industrial">Industrial Property</option>
+    <option value="resort">Resort / Hotel</option>
   </select>
+  <input type="text" id="location" placeholder="Location (County, Sub-county, Town)" required />
+  <input type="number" id="price" placeholder="Price (KES)" required />
+  
+  <input type="tel" id="contact" placeholder="Phone number" required />
+  <textarea id="description" placeholder="Description"></textarea>
+  <input type="file" id="images" accept="image/*" multiple required />
+  <div id="previewContainer" style="display:flex; flex-wrap:wrap;"></div>
+  <div id="loading" style="display:none; text-align:center; font-weight:bold;">⏳ Uploading, please wait...</div>
+  <button type="submit">Submit</button>
+</form>
 
-  <select id="filterCounty" onchange="loadMarkers()">
-    <option value="All">All Counties</option>
-  </select>
+<!-- All Listings -->
+<h2>🏠 All Listings</h2>
+<div id="listings"></div>
 
-  <select id="filterLocation" onchange="loadMarkers()">
-    <option value="All">All Locations</option>
-  </select>
-</div>
-
-<select id="userSelect" onchange="zoomToUser(this.value)">
-  <option value="">-- Select Property --</option>
-</select>
-
-<div id="map"></div>
-
-<!-- Leaflet JS -->
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-<script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.min.js"></script>
-
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
-  import { getDatabase, ref, set, get, remove } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-database.js";
-
-  const firebaseConfig = {
+<script>
+   const firebaseConfig = {
     apiKey: "AIzaSyDLTAd2u0IlhA4Gm4-0tTSzLUDHFYj045g",
     authDomain: "realestate-afbe6.firebaseapp.com",
     databaseURL: "https://realestate-afbe6-default-rtdb.firebaseio.com",
     projectId: "realestate-afbe6",
     storageBucket: "realestate-afbe6.appspot.com",
     messagingSenderId: "202970291965",
-    appId: "1:202970291965:web:baaf253d6c9a8685c5e894",
-    measurementId: "G-S0GB80V66F"
+    appId: "1:202970291965:web:baaf253d6c9a8685c5e894"
   };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
 
-  const app = initializeApp(firebaseConfig);
-  const db = getDatabase(app);
+  // Cloudinary setup
+  const cloudName = "dwvt4e9o2";
+  const uploadPreset = "unsigned_upload";
 
-  let map = L.map('map').setView([-1.2921, 36.8219], 6);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+  // Grab form elements
+  const form = document.getElementById("uploadForm");
+  const imageInput = document.getElementById("images");
+  const previewContainer = document.getElementById("previewContainer");
+  const loading = document.getElementById("loading");
 
-  let markers = [];
-  let routingControl;
-  let userWatcherId;
-  let currentUserLatLng;
-  const myPhone = localStorage.getItem("myPhone") || "";
+  let imageURLs = [], isSubmitting = false;
+  let currentUserLatLng = null;
 
-  window.shareLocation = async function () {
-    navigator.geolocation.getCurrentPosition(async (pos) => {
-      const lat = pos.coords.latitude;
-      const lng = pos.coords.longitude;
+  // Preview images
+  imageInput.addEventListener("change", () => {
+    previewContainer.innerHTML = "";
+    imageURLs = [];
+    [...imageInput.files].forEach(file => {
+      const img = document.createElement("img");
+      img.src = URL.createObjectURL(file);
+      previewContainer.appendChild(img);
+    });
+  });
 
-      const ownerName = document.getElementById("ownerName").value.trim();
-      const propertyType = document.getElementById("propertyType").value.trim();
-      const county = document.getElementById("county").value.trim();
-      const location = document.getElementById("location").value.trim();
-      const price = document.getElementById("price").value.trim();
-      const phone = document.getElementById("phone").value.trim();
-      const status = document.getElementById("status").value;
-      const description = document.getElementById("description").value.trim();
+  // Get user location at startup
+  navigator.geolocation.getCurrentPosition(
+    pos => currentUserLatLng = L.latLng(pos.coords.latitude, pos.coords.longitude),
+    () => console.warn("Geolocation access denied.")
+  );
 
-      if (!ownerName || !propertyType || !county || !location || !price || !phone) {
-        return alert("Please fill all fields.");
+  // Handle form submit
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (isSubmitting) return;
+    isSubmitting = true;
+    loading.style.display = "block";
+
+    const files = [...imageInput.files];
+    imageURLs = [];
+
+    try {
+      // Upload to Cloudinary
+      for (const file of files) {
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("upload_preset", uploadPreset);
+        formData.append("folder", "listings");
+        const res = await axios.post(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, formData);
+        imageURLs.push(res.data.secure_url);
       }
 
-      const userId = phone.replace(/[^0-9]/g, "");
-      localStorage.setItem("myPhone", phone);
+      // Attempt geolocation on submit
+      let lat = null, lng = null;
+      try {
+        const pos = await new Promise((res, rej) => 
+          navigator.geolocation.getCurrentPosition(res, rej)
+        );
+        lat = pos.coords.latitude;
+        lng = pos.coords.longitude;
+      } catch {}
 
-      await set(ref(db, "properties/" + userId), {
-        ownerName, propertyType, county, location, price, phone, status, description, lat, lng
-      });
+      // Build object
+      const property = {
+        type: document.getElementById("type").value,
+        location: document.getElementById("location").value,
+        price: parseInt(document.getElementById("price").value),
+        contact: document.getElementById("contact").value,
+        description: document.getElementById("description").value,
+        images: imageURLs,
+        lat, lng,
+        timestamp: Date.now()
+      };
 
-      alert("✅ Property saved!");
-      loadMarkers();
-    }, () => alert("❌ Location access denied."));
-  };
+      await db.ref("listings").push(property);
+      alert("✅ Uploaded!");
+      form.reset();
+      previewContainer.innerHTML = "";
+      loadListings();
+    } catch(err) {
+      console.error(err);
+      alert("❌ Upload failed");
+    } finally {
+      loading.style.display = "none";
+      isSubmitting = false;
+    }
+  });
 
-  async function loadMarkers() {
+  // Load and render listings
+  function loadListings() {
     const filterType = document.getElementById("filterType").value;
-    const filterCounty = document.getElementById("filterCounty").value;
     const filterLocation = document.getElementById("filterLocation").value;
+    const minPrice = parseInt(document.getElementById("minPrice").value) || 0;
+    const maxPrice = parseInt(document.getElementById("maxPrice").value) || Infinity;
 
-    const dropdown = document.getElementById("userSelect");
-    dropdown.innerHTML = `<option value="">-- Select Property --</option>`;
+    db.ref("listings").once("value", snapshot => {
+      const data = snapshot.val() || {};
+      const listingsDiv = document.getElementById("listings");
+      listingsDiv.innerHTML = "";
 
-    markers.forEach(m => map.removeLayer(m));
-    markers = [];
+      for (let id in data) {
+        const item = data[id];
+        if (
+          (filterType && item.type !== filterType) ||
+          (filterLocation && !item.location.toLowerCase().includes(filterLocation.toLowerCase())) ||
+          (item.price < minPrice || item.price > maxPrice)
+        ) continue;
 
-    const snap = await get(ref(db, "properties"));
-    if (!snap.exists()) return;
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
+          <p><strong>Type:</strong> ${item.type}</p>
+          <p><strong>Location:</strong> ${item.location}</p>
+          <p><strong>Price:</strong> KES ${item.price}</p>
+          <p>${item.description}</p>
+          <p><strong>Contact:</strong> ${item.contact}</p>
+        `;
 
-    const types = new Set(), counties = new Set(), locations = new Set();
+        (item.images || []).forEach(url => {
+          const img = document.createElement("img");
+          img.src = url;
+          img.className = "property";
+          card.appendChild(img);
+        });
 
-    snap.forEach(child => {
-      const d = child.val();
-      types.add(d.propertyType);
-      counties.add(d.county);
-      locations.add(d.location);
-
-      if (
-        (filterType !== "All" && d.propertyType !== filterType) ||
-        (filterCounty !== "All" && d.county !== filterCounty) ||
-        (filterLocation !== "All" && d.location !== filterLocation)
-      ) return;
-
-      const marker = L.marker([d.lat, d.lng]).addTo(map);
-      let popupHtml = `
-        <b>${d.propertyType}</b><br>
-        🧑 ${d.ownerName}<br>
-        📍 ${d.county}, ${d.location}<br>
-        💰 KES ${d.price}<br>
-        📞 ${d.phone}<br>
-        📝 ${d.description}<br>
-        📌 ${d.status}<br><br>
-        <button id="dir-btn-${d.phone}">📍 Get Directions</button>`;
-
-      if (d.phone === myPhone) {
-        popupHtml += `
-          <div class="owner-buttons">
-            <button class="edit" onclick="editMyLocation('${d.phone}')">✏️ Edit</button>
-            <button onclick="deleteMyLocation('${d.phone}')">🗑️ Delete</button>
-          </div>`;
-      }
-
-      marker.bindPopup(popupHtml);
-      marker.on("popupopen", () => {
-        const btn = document.getElementById(`dir-btn-${d.phone}`);
-        if (btn) {
-          btn.addEventListener("click", () => getDirections(d.lat, d.lng));
+        if (item.lat != null && item.lng != null) {
+          const mapContainerId = `map-${id}`;
+          const mapBtn = document.createElement("button");
+          mapBtn.textContent = "📍 Show Directions";
+          mapBtn.onclick = () => showMapForListing(item.lat, item.lng, mapContainerId);
+          const mapDiv = document.createElement("div");
+          mapDiv.id = mapContainerId;
+          mapDiv.style.marginTop = "10px";
+          card.appendChild(mapBtn);
+          card.appendChild(mapDiv);
         }
-      });
 
-      markers.push(marker);
-
-      const opt = document.createElement("option");
-      opt.value = `${d.lat},${d.lng}`;
-      opt.textContent = `${d.propertyType} – ${d.county}, ${d.location}`;
-      dropdown.appendChild(opt);
-    });
-
-    updateFilters(types, counties, locations);
-  }
-
-  function updateFilters(types, counties, locations) {
-    updateSelect("filterType", types);
-    updateSelect("filterCounty", counties);
-    updateSelect("filterLocation", locations);
-  }
-
-  function updateSelect(id, values) {
-    const select = document.getElementById(id);
-    const current = select.value;
-    select.innerHTML = `<option value="All">All</option>`;
-    Array.from(values).sort().forEach(v => {
-      const opt = document.createElement("option");
-      opt.value = v;
-      opt.textContent = v;
-      select.appendChild(opt);
-    });
-    if (values.has(current)) select.value = current;
-  }
-
-  window.zoomToUser = function (val) {
-    if (!val) return;
-    const [lat, lng] = val.split(",").map(parseFloat);
-    map.setView([lat, lng], 16);
-  };
-
-  window.editMyLocation = async function (phone) {
-    const snap = await get(ref(db, "properties/" + phone.replace(/[^0-9]/g, "")));
-    if (!snap.exists()) return;
-    const d = snap.val();
-    document.getElementById("ownerName").value = d.ownerName;
-    document.getElementById("propertyType").value = d.propertyType;
-    document.getElementById("county").value = d.county;
-    document.getElementById("location").value = d.location;
-    document.getElementById("price").value = d.price;
-    document.getElementById("phone").value = d.phone;
-    document.getElementById("status").value = d.status;
-    document.getElementById("description").value = d.description || '';
-  };
-
-  window.deleteMyLocation = async function (phone) {
-    if (confirm("Delete this listing?")) {
-      await remove(ref(db, "properties/" + phone.replace(/[^0-9]/g, "")));
-      alert("❌ Listing deleted.");
-      loadMarkers();
-    }
-  };
-
-  
-  
-  
-  function getDirections(destLat, destLng) {
-  if (routingControl) map.removeControl(routingControl);
-  if (userWatcherId) navigator.geolocation.clearWatch(userWatcherId);
-
-  let spokenSteps = new Set();
-  let routeInstructions = [];
-
-  routingControl = L.Routing.control({
-    waypoints: [L.latLng(currentUserLatLng || [0, 0]), L.latLng(destLat, destLng)],
-    routeWhileDragging: false,
-    show: true,
-    collapsible: true,
-  }).addTo(map);
-
-  routingControl.on('routesfound', function (e) {
-    routeInstructions = e.routes[0].instructions;
-    spokenSteps.clear(); // reset spoken steps
-  });
-
-  userWatcherId = navigator.geolocation.watchPosition(pos => {
-    currentUserLatLng = L.latLng(pos.coords.latitude, pos.coords.longitude);
-    map.setView(currentUserLatLng, 16);
-
-    // Update routing waypoints to refresh route
-    routingControl.setWaypoints([
-      currentUserLatLng,
-      L.latLng(destLat, destLng)
-    ]);
-
-    // Check nearby instructions to speak
-    for (let step of routeInstructions) {
-      const stepLatLng = L.latLng(step.lat, step.lng);
-      if (
-        currentUserLatLng.distanceTo(stepLatLng) < 25 &&
-        !spokenSteps.has(step.text)
-      ) {
-        spokenSteps.add(step.text);
-        speak(step.text);
-        break;
+        listingsDiv.appendChild(card);
       }
-    }
-  }, err => {
-    alert("❌ Could not access your location.");
-  }, {
-    enableHighAccuracy: true,
-    maximumAge: 0,
-    timeout: 10000
-  });
-}
+    });
+  }
 
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
+  // Show map and routing
+  function showMapForListing(destLat, destLng, containerId) {
+    const container = document.getElementById(containerId);
+    container.innerHTML = "";
+    const mapDiv = document.createElement("div");
+    mapDiv.style.height = "300px";
+    mapDiv.style.borderRadius = "10px";
+    container.appendChild(mapDiv);
 
-  loadMarkers();
-  
-  
-  function speakInstructions(steps) {
-  if (!window.speechSynthesis) return;
+    const map = L.map(mapDiv).setView([destLat, destLng], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-  const synth = window.speechSynthesis;
-  synth.cancel(); // clear any ongoing speech
+    L.Routing.control({
+      waypoints: [
+        currentUserLatLng || L.latLng(destLat - 0.01, destLng - 0.01),
+        L.latLng(destLat, destLng)
+      ],
+      routeWhileDragging: false,
+      collapsible: true
+    }).addTo(map);
+  }
 
-  steps.forEach((step, index) => {
-    const utter = new SpeechSynthesisUtterance(`${step.text}`);
-    utter.rate = 1; // adjust speech speed
-    utter.pitch = 1;
-    utter.lang = "en-US";
-
-    synth.speak(utter);
-  });
-}
-
-  
-  
-  
-  
-  function speak(text) {
-  if (!window.speechSynthesis) return;
-  const utter = new SpeechSynthesisUtterance(text);
-  utter.rate = 1;
-  utter.pitch = 1;
-  utter.lang = "en-US";
-  speechSynthesis.speak(utter);
-}
-
-  
-  
-  
+  window.onload = loadListings;
 </script>
 
 </body>
 </html>
-
-    
