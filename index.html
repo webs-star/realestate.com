@@ -143,7 +143,8 @@
   <input type="tel" id="contact" placeholder="Phone number" required />
   <textarea id="description" placeholder="Description (optional)"></textarea>
 
-  <input type="file" id="images" accept="image/*" multiple required />
+  <input type="file" id="images" accept="image/*" multiple /> <!-- No 'required' -->
+
   <div style="font-size: 0.9em; color: #777;">Max 3 images</div>
   <div id="previewContainer"></div>
 
@@ -205,23 +206,25 @@
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     if (!currentUserLatLng) return alert("⚠️ Location not available.");
+const files = [...imageInput.files];
+if (files.length > 3) {
+  alert("You can only upload up to 3 images.");
+  return;
+}
 
-    const files = [...imageInput.files];
-    if (files.length === 0 || files.length > 3) {
-      alert("Please select up to 3 images.");
-      return;
-    }
+loading.style.display = "block";
+const imageURLs = [];
 
-    loading.style.display = "block";
-    const imageURLs = [];
+if (files.length > 0) {
+  for (const file of files) {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", uploadPreset);
+    const res = await axios.post(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, formData);
+    imageURLs.push(res.data.secure_url);
+  }
+}
 
-    for (const file of files) {
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("upload_preset", uploadPreset);
-      const res = await axios.post(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, formData);
-      imageURLs.push(res.data.secure_url);
-    }
 
     const data = {
       type: document.getElementById("type").value,
@@ -247,50 +250,55 @@
     const listings = snap.val() || {};
     listingsDiv.innerHTML = "";
 
-    for (const id in listings) {
-      const item = listings[id];
-      const div = document.createElement("div");
-      div.className = "listing-card";
 
-      const imagesHTML = item.images.map(url => `<img src="${url}" alt="property">`).join("");
-      div.innerHTML = `
-        ${imagesHTML}
-        <h4>${item.type} – KES ${item.price}</h4>
-        <p><strong>Location:</strong> ${item.location}</p>
-        <p><strong>Contact:</strong> ${item.contact}</p>
-        <p>${item.description || ""}</p>
-      `;
 
-      if (item.userId === userId) {
-        const editBtn = document.createElement("button");
-        editBtn.textContent = "✏️ Edit";
-        editBtn.className = "edit-btn";
-        editBtn.onclick = () => {
-          const type = prompt("New type:", item.type);
-          const price = prompt("New price:", item.price);
-          if (type && price) {
-            db.ref("listings/" + id).update({ type, price: parseInt(price) });
-          }
-        };
-        div.appendChild(editBtn);
 
-        const delBtn = document.createElement("button");
-        delBtn.textContent = "🗑️ Delete";
-        delBtn.className = "delete-btn";
-        delBtn.onclick = () => {
-          if (confirm("Delete this listing?")) {
-            db.ref("listings/" + id).remove();
-          }
-        };
-        div.appendChild(delBtn);
+
+const sortedListings = Object.entries(listings)
+  .sort((a, b) => b[1].timestamp - a[1].timestamp); // newest first
+
+for (const [id, item] of sortedListings) {
+  const div = document.createElement("div");
+  div.className = "listing-card";
+
+  const imagesHTML = (item.images || []).map(url => `<img src="${url}" alt="property">`).join("");
+
+  div.innerHTML = `
+    ${imagesHTML}
+    <h4>${item.type} – KES ${item.price}</h4>
+    <p><strong>Location:</strong> ${item.location}</p>
+    <p><strong>Contact:</strong> ${item.contact}</p>
+    <p>${item.description || ""}</p>
+  `;
+
+  if (item.userId === userId) {
+    const editBtn = document.createElement("button");
+    editBtn.textContent = "✏️ Edit";
+    editBtn.className = "edit-btn";
+    editBtn.onclick = () => {
+      const type = prompt("New type:", item.type);
+      const price = prompt("New price:", item.price);
+      if (type && price) {
+        db.ref("listings/" + id).update({ type, price: parseInt(price) });
       }
+    };
+    div.appendChild(editBtn);
 
-      listingsDiv.appendChild(div);
-    }
+    const delBtn = document.createElement("button");
+    delBtn.textContent = "🗑️ Delete";
+    delBtn.className = "delete-btn";
+    delBtn.onclick = () => {
+      if (confirm("Delete this listing?")) {
+        db.ref("listings/" + id).remove();
+      }
+    };
+    div.appendChild(delBtn);
+  }
+
+  listingsDiv.appendChild(div);
+}
+
   });
 </script>
 </body>
 </html>
-
-
-
