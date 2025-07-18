@@ -129,7 +129,135 @@
 	
 	
 	
-	
+	 body {
+    font-family: 'Segoe UI', sans-serif;
+    background: #f4f6f9;
+    margin: 0;
+    padding: 20px;
+  }
+
+  h2 {
+    color: #2c3e50;
+    text-align: center;
+    margin-bottom: 15px;
+  }
+
+  .upload-section {
+    background: #ffffff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    max-width: 700px;
+    margin: auto;
+  }
+
+  form select, form input, form textarea, form button {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    box-sizing: border-box;
+    font-size: 14px;
+  }
+
+  form button {
+    background-color: #007bff;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 15px;
+    transition: background 0.3s ease;
+  }
+
+  form button:hover {
+    background-color: #0056b3;
+  }
+
+  #loading {
+    text-align: center;
+    font-weight: bold;
+    color: #ff6600;
+    margin-top: 10px;
+    display: none;
+  }
+
+  .image-preview {
+    display: flex;
+    flex-wrap: wrap;
+    margin-top: 10px;
+    gap: 10px;
+  }
+
+  .image-preview img {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+  }
+
+  .listings {
+    margin-top: 40px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+  }
+
+  .listing-card {
+    background: #fff;
+    border-radius: 10px;
+    padding: 15px;
+    width: 300px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    transition: transform 0.2s;
+  }
+
+  .listing-card:hover {
+    transform: scale(1.02);
+  }
+
+  .listing-card img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin-bottom: 10px;
+  }
+
+  .listing-card h4 {
+    margin: 0;
+    color: #333;
+  }
+
+  .listing-card p {
+    margin: 4px 0;
+    font-size: 14px;
+    color: #555;
+  }
+
+  .listing-card button {
+    margin-top: 10px;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 6px;
+    background: #dc3545;
+    color: #fff;
+    font-size: 14px;
+    cursor: pointer;
+  }
+
+  .listing-card button.edit-btn {
+    background: #28a745;
+    margin-right: 10px;
+  }
+
+  @media (max-width: 600px) {
+    .upload-section, .listing-card {
+      width: 100%;
+    }
+  }
 	
 	
   </style>
@@ -150,16 +278,9 @@
 
 <body>
 
-
-
-
-
-<!-- Upload Form -->
 <h2>📤 Upload Property Listing</h2>
+
 <form id="uploadForm">
-  
- 
-  
   <select id="type" required>
     <option value="">Select Property Type</option>
     <option value="land">Land / Plots</option>
@@ -181,23 +302,31 @@
     <option value="industrial">Industrial Property</option>
     <option value="resort">Resort / Hotel</option>
   </select>
+
   <input type="text" id="location" placeholder="Location (County, Sub-county, Town)" required />
   <input type="number" id="price" placeholder="Price (KES)" required />
-  
   <input type="tel" id="contact" placeholder="Phone number" required />
   <textarea id="description" placeholder="Description"></textarea>
+
+  <label><strong>Select up to 3 images:</strong></label>
   <input type="file" id="images" accept="image/*" multiple required />
-  <div id="previewContainer" style="display:flex; flex-wrap:wrap;"></div>
-  <div id="loading" style="display:none; text-align:center; font-weight:bold;">⏳ Uploading, please wait...</div>
-  <button type="submit">Submit</button>
+  <div style="font-size: 0.9em; color: #777; margin-bottom: 5px;">Max 3 images allowed</div>
+
+  <div id="previewContainer" style="display:flex; flex-wrap:wrap; gap:10px; margin-top:10px;"></div>
+  <div id="loading" style="display:none; text-align:center; font-weight:bold; margin-top:10px;">
+    ⏳ Uploading, please wait...
+  </div>
+  <button type="submit" id="submitBtn">Submit</button>
 </form>
+
 
 <!-- All Listings -->
 <h2>🏠 All Listings</h2>
 <div id="listings"></div>
 
+<!-- Firebase + Cloudinary Setup -->
 <script>
-   const firebaseConfig = {
+  const firebaseConfig = {
     apiKey: "AIzaSyDLTAd2u0IlhA4Gm4-0tTSzLUDHFYj045g",
     authDomain: "realestate-afbe6.firebaseapp.com",
     databaseURL: "https://realestate-afbe6-default-rtdb.firebaseio.com",
@@ -212,65 +341,75 @@
   // Cloudinary setup
   const cloudName = "dwvt4e9o2";
   const uploadPreset = "unsigned_upload";
+</script>
 
-  // Grab form elements
+<script>
   const form = document.getElementById("uploadForm");
   const imageInput = document.getElementById("images");
   const previewContainer = document.getElementById("previewContainer");
   const loading = document.getElementById("loading");
 
-  let imageURLs = [], isSubmitting = false;
-  let currentUserLatLng = null;
+  let imageURLs = [], isSubmitting = false, currentUserLatLng = null;
 
-  // Preview images
+  // Try getting user's location for directions
+  navigator.geolocation.getCurrentPosition(
+    pos => currentUserLatLng = L.latLng(pos.coords.latitude, pos.coords.longitude),
+    () => console.warn("Geolocation blocked")
+  );
+
+  // Handle image preview and enforce max 3 images
   imageInput.addEventListener("change", () => {
+    const files = [...imageInput.files];
     previewContainer.innerHTML = "";
-    imageURLs = [];
-    [...imageInput.files].forEach(file => {
+
+    if (files.length > 3) {
+      alert("⚠️ You can upload a maximum of 3 images.");
+      imageInput.value = "";
+      return;
+    }
+
+    files.forEach(file => {
       const img = document.createElement("img");
       img.src = URL.createObjectURL(file);
+      img.style.width = "100px";
+      img.style.height = "100px";
+      img.style.objectFit = "cover";
+      img.style.margin = "5px";
+      img.style.border = "1px solid #ccc";
+      img.style.borderRadius = "5px";
       previewContainer.appendChild(img);
     });
   });
 
-  // Get user location at startup
-  navigator.geolocation.getCurrentPosition(
-    pos => currentUserLatLng = L.latLng(pos.coords.latitude, pos.coords.longitude),
-    () => console.warn("Geolocation access denied.")
-  );
-
-  // Handle form submit
+  // Upload form submission
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     if (isSubmitting) return;
+
+    const files = [...imageInput.files];
+    if (files.length === 0 || files.length > 3) {
+      alert("⚠️ Please upload between 1 and 3 images.");
+      return;
+    }
+
     isSubmitting = true;
     loading.style.display = "block";
 
-    const files = [...imageInput.files];
-    imageURLs = [];
-
     try {
-      // Upload to Cloudinary
+      imageURLs = [];
+
       for (const file of files) {
         const formData = new FormData();
         formData.append("file", file);
         formData.append("upload_preset", uploadPreset);
         formData.append("folder", "listings");
+
         const res = await axios.post(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, formData);
         imageURLs.push(res.data.secure_url);
       }
 
-      // Attempt geolocation on submit
-      let lat = null, lng = null;
-      try {
-        const pos = await new Promise((res, rej) => 
-          navigator.geolocation.getCurrentPosition(res, rej)
-        );
-        lat = pos.coords.latitude;
-        lng = pos.coords.longitude;
-      } catch {}
+      const { latitude: lat, longitude: lng } = currentUserLatLng || {};
 
-      // Build object
       const property = {
         type: document.getElementById("type").value,
         location: document.getElementById("location").value,
@@ -283,77 +422,97 @@
       };
 
       await db.ref("listings").push(property);
-      alert("✅ Uploaded!");
+
+      alert("✅ Listing uploaded successfully!");
       form.reset();
       previewContainer.innerHTML = "";
-      loadListings();
-    } catch(err) {
+
+    } catch (err) {
       console.error(err);
-      alert("❌ Upload failed");
+      alert("❌ Upload failed. Please try again.");
     } finally {
-      loading.style.display = "none";
       isSubmitting = false;
+      loading.style.display = "none";
     }
   });
 
-  // Load and render listings
-  function loadListings() {
-    const filterType = document.getElementById("filterType").value;
-    const filterLocation = document.getElementById("filterLocation").value;
-    const minPrice = parseInt(document.getElementById("minPrice").value) || 0;
-    const maxPrice = parseInt(document.getElementById("maxPrice").value) || Infinity;
+  // Show live listings
+  const listingsDiv = document.getElementById("listings");
+  db.ref("listings").on("value", (snapshot) => {
+    const data = snapshot.val() || {};
+    listingsDiv.innerHTML = "";
 
-    db.ref("listings").once("value", snapshot => {
-      const data = snapshot.val() || {};
-      const listingsDiv = document.getElementById("listings");
-      listingsDiv.innerHTML = "";
+    for (const id in data) {
+      const item = data[id];
+      const card = document.createElement("div");
+      card.className = "card";
 
-      for (let id in data) {
-        const item = data[id];
-        if (
-          (filterType && item.type !== filterType) ||
-          (filterLocation && !item.location.toLowerCase().includes(filterLocation.toLowerCase())) ||
-          (item.price < minPrice || item.price > maxPrice)
-        ) continue;
+      card.innerHTML = `
+        <p><strong>Type:</strong> ${item.type}</p>
+        <p><strong>Location:</strong> ${item.location}</p>
+        <p><strong>Price:</strong> KES ${item.price}</p>
+        <p>${item.description}</p>
+        <p><strong>Contact:</strong> ${item.contact}</p>
+        ${(item.images || []).map(url => `<img src="${url}" class="property" style="width:100px;margin:5px;border-radius:5px;">`).join("")}
+      `;
 
-        const card = document.createElement("div");
-        card.className = "card";
-        card.innerHTML = `
-          <p><strong>Type:</strong> ${item.type}</p>
-          <p><strong>Location:</strong> ${item.location}</p>
-          <p><strong>Price:</strong> KES ${item.price}</p>
-          <p>${item.description}</p>
-          <p><strong>Contact:</strong> ${item.contact}</p>
-        `;
-
-        (item.images || []).forEach(url => {
-          const img = document.createElement("img");
-          img.src = url;
-          img.className = "property";
-          card.appendChild(img);
-        });
-
-        if (item.lat != null && item.lng != null) {
-          const mapContainerId = `map-${id}`;
-          const mapBtn = document.createElement("button");
-          mapBtn.textContent = "📍 Show Directions";
-          mapBtn.onclick = () => showMapForListing(item.lat, item.lng, mapContainerId);
-          const mapDiv = document.createElement("div");
-          mapDiv.id = mapContainerId;
-          mapDiv.style.marginTop = "10px";
-          card.appendChild(mapBtn);
-          card.appendChild(mapDiv);
-        }
-
-        listingsDiv.appendChild(card);
+      // Show directions
+      if (item.lat != null && item.lng != null) {
+        const mapContainerId = `map-${id}`;
+        const mapBtn = document.createElement("button");
+        mapBtn.textContent = "📍 Show Directions";
+        mapBtn.onclick = () => showMapForListing(item.lat, item.lng, mapContainerId);
+        const mapDiv = document.createElement("div");
+        mapDiv.id = mapContainerId;
+        mapDiv.style.marginTop = "10px";
+        card.appendChild(mapBtn);
+        card.appendChild(mapDiv);
       }
-    });
+
+      // Edit button
+      const editBtn = document.createElement("button");
+      editBtn.textContent = "✏️ Edit";
+      editBtn.onclick = () => editListing(id, item);
+      card.appendChild(editBtn);
+
+      // Delete button
+      const delBtn = document.createElement("button");
+      delBtn.textContent = "🗑️ Delete";
+      delBtn.onclick = () => {
+        if (confirm("Are you sure you want to delete this listing?")) {
+          db.ref("listings/" + id).remove();
+        }
+      };
+      card.appendChild(delBtn);
+
+      listingsDiv.appendChild(card);
+    }
+  });
+
+  // Inline Edit Function
+  function editListing(id, data) {
+    const newType = prompt("Edit type", data.type);
+    const newLocation = prompt("Edit location", data.location);
+    const newPrice = prompt("Edit price", data.price);
+    const newContact = prompt("Edit contact", data.contact);
+    const newDescription = prompt("Edit description", data.description);
+
+    if (newType && newLocation && newPrice && newContact) {
+      db.ref("listings/" + id).update({
+        type: newType,
+        location: newLocation,
+        price: parseInt(newPrice),
+        contact: newContact,
+        description: newDescription
+      });
+    }
   }
 
-  // Show map and routing
+  // Show map directions
   function showMapForListing(destLat, destLng, containerId) {
     const container = document.getElementById(containerId);
     container.innerHTML = "";
+
     const mapDiv = document.createElement("div");
     mapDiv.style.height = "300px";
     mapDiv.style.borderRadius = "10px";
@@ -372,8 +531,214 @@
     }).addTo(map);
   }
 
-  window.onload = loadListings;
+<!-- Firebase + Cloudinary Setup -->
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyDLTAd2u0IlhA4Gm4-0tTSzLUDHFYj045g",
+    authDomain: "realestate-afbe6.firebaseapp.com",
+    databaseURL: "https://realestate-afbe6-default-rtdb.firebaseio.com",
+    projectId: "realestate-afbe6",
+    storageBucket: "realestate-afbe6.appspot.com",
+    messagingSenderId: "202970291965",
+    appId: "1:202970291965:web:baaf253d6c9a8685c5e894"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+
+  // Cloudinary setup
+  const cloudName = "dwvt4e9o2";
+  const uploadPreset = "unsigned_upload";
 </script>
+
+<script>
+  const form = document.getElementById("uploadForm");
+  const imageInput = document.getElementById("images");
+  const previewContainer = document.getElementById("previewContainer");
+  const loading = document.getElementById("loading");
+
+  let imageURLs = [], isSubmitting = false, currentUserLatLng = null;
+
+  // Try getting user's location for directions
+  navigator.geolocation.getCurrentPosition(
+    pos => currentUserLatLng = L.latLng(pos.coords.latitude, pos.coords.longitude),
+    () => console.warn("Geolocation blocked")
+  );
+
+  // Handle image preview and enforce max 3 images
+  imageInput.addEventListener("change", () => {
+    const files = [...imageInput.files];
+    previewContainer.innerHTML = "";
+
+    if (files.length > 3) {
+      alert("⚠️ You can upload a maximum of 3 images.");
+      imageInput.value = "";
+      return;
+    }
+
+    files.forEach(file => {
+      const img = document.createElement("img");
+      img.src = URL.createObjectURL(file);
+      img.style.width = "100px";
+      img.style.height = "100px";
+      img.style.objectFit = "cover";
+      img.style.margin = "5px";
+      img.style.border = "1px solid #ccc";
+      img.style.borderRadius = "5px";
+      previewContainer.appendChild(img);
+    });
+  });
+
+  // Upload form submission
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (isSubmitting) return;
+
+    const files = [...imageInput.files];
+    if (files.length === 0 || files.length > 3) {
+      alert("⚠️ Please upload between 1 and 3 images.");
+      return;
+    }
+
+    isSubmitting = true;
+    loading.style.display = "block";
+
+    try {
+      imageURLs = [];
+
+      for (const file of files) {
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("upload_preset", uploadPreset);
+        formData.append("folder", "listings");
+
+        const res = await axios.post(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, formData);
+        imageURLs.push(res.data.secure_url);
+      }
+
+      const { latitude: lat, longitude: lng } = currentUserLatLng || {};
+
+      const property = {
+        type: document.getElementById("type").value,
+        location: document.getElementById("location").value,
+        price: parseInt(document.getElementById("price").value),
+        contact: document.getElementById("contact").value,
+        description: document.getElementById("description").value,
+        images: imageURLs,
+        lat, lng,
+        timestamp: Date.now()
+      };
+
+      await db.ref("listings").push(property);
+
+      alert("✅ Listing uploaded successfully!");
+      form.reset();
+      previewContainer.innerHTML = "";
+
+    } catch (err) {
+      console.error(err);
+      alert("❌ Upload failed. Please try again.");
+    } finally {
+      isSubmitting = false;
+      loading.style.display = "none";
+    }
+  });
+
+  // Show live listings
+  const listingsDiv = document.getElementById("listings");
+  db.ref("listings").on("value", (snapshot) => {
+    const data = snapshot.val() || {};
+    listingsDiv.innerHTML = "";
+
+    for (const id in data) {
+      const item = data[id];
+      const card = document.createElement("div");
+      card.className = "card";
+
+      card.innerHTML = `
+        <p><strong>Type:</strong> ${item.type}</p>
+        <p><strong>Location:</strong> ${item.location}</p>
+        <p><strong>Price:</strong> KES ${item.price}</p>
+        <p>${item.description}</p>
+        <p><strong>Contact:</strong> ${item.contact}</p>
+        ${(item.images || []).map(url => `<img src="${url}" class="property" style="width:100px;margin:5px;border-radius:5px;">`).join("")}
+      `;
+
+      // Show directions
+      if (item.lat != null && item.lng != null) {
+        const mapContainerId = `map-${id}`;
+        const mapBtn = document.createElement("button");
+        mapBtn.textContent = "📍 Show Directions";
+        mapBtn.onclick = () => showMapForListing(item.lat, item.lng, mapContainerId);
+        const mapDiv = document.createElement("div");
+        mapDiv.id = mapContainerId;
+        mapDiv.style.marginTop = "10px";
+        card.appendChild(mapBtn);
+        card.appendChild(mapDiv);
+      }
+
+      // Edit button
+      const editBtn = document.createElement("button");
+      editBtn.textContent = "✏️ Edit";
+      editBtn.onclick = () => editListing(id, item);
+      card.appendChild(editBtn);
+
+      // Delete button
+      const delBtn = document.createElement("button");
+      delBtn.textContent = "🗑️ Delete";
+      delBtn.onclick = () => {
+        if (confirm("Are you sure you want to delete this listing?")) {
+          db.ref("listings/" + id).remove();
+        }
+      };
+      card.appendChild(delBtn);
+
+      listingsDiv.appendChild(card);
+    }
+  });
+
+  // Inline Edit Function
+  function editListing(id, data) {
+    const newType = prompt("Edit type", data.type);
+    const newLocation = prompt("Edit location", data.location);
+    const newPrice = prompt("Edit price", data.price);
+    const newContact = prompt("Edit contact", data.contact);
+    const newDescription = prompt("Edit description", data.description);
+
+    if (newType && newLocation && newPrice && newContact) {
+      db.ref("listings/" + id).update({
+        type: newType,
+        location: newLocation,
+        price: parseInt(newPrice),
+        contact: newContact,
+        description: newDescription
+      });
+    }
+  }
+
+  // Show map directions
+  function showMapForListing(destLat, destLng, containerId) {
+    const container = document.getElementById(containerId);
+    container.innerHTML = "";
+
+    const mapDiv = document.createElement("div");
+    mapDiv.style.height = "300px";
+    mapDiv.style.borderRadius = "10px";
+    container.appendChild(mapDiv);
+
+    const map = L.map(mapDiv).setView([destLat, destLng], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+    L.Routing.control({
+      waypoints: [
+        currentUserLatLng || L.latLng(destLat - 0.01, destLng - 0.01),
+        L.latLng(destLat, destLng)
+      ],
+      routeWhileDragging: false,
+      collapsible: true
+    }).addTo(map);
+  }
+</script>
+
 
 </body>
 </html>
