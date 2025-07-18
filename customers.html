@@ -53,6 +53,50 @@
       margin-top: 10px;
       width: 100%;
     }
+	
+	
+	
+	
+	.listing-card h4 {
+  color: #111; /* Darker */
+}
+
+.listing-card p {
+  color: #222; /* More visible */
+}
+
+.listing-card .description {
+  color: #000;
+  background-color: #f0f0f0; /* Slightly darker background for better contrast */
+
+
+  white-space: pre-wrap; /* Keeps line breaks from textarea */
+  max-height: 100px;
+  overflow-y: auto;
+}
+
+	.listing-card .description::-webkit-scrollbar {
+  width: 6px;
+}
+
+.listing-card .description::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 10px;
+}
+
+	.listing-card {
+  color: #111;
+}
+.listing-card strong {
+  color: #000;
+  font-weight: bold;
+}
+
+.bold-info {
+  font-weight: bold;
+  color: #000;
+}
+	
   </style>
 </head>
 <body>
@@ -140,7 +184,7 @@
     });
 
     for (const [id, item] of sortedEntries) {
-     const itemLocation = (item.location || "").toLowerCase().trim();
+      const itemLocation = (item.location || "").toLowerCase().trim();
 const filterLoc = filterLocation.toLowerCase().trim();
 
 if (
@@ -151,13 +195,13 @@ if (
 
 
       const card = document.createElement("div");
-      card.className = "card";
+card.className = "listing-card"; // <-- Add this line
       card.innerHTML = `
-        <p><strong>Type:</strong> ${item.type}</p>
-        <p><strong>Location:</strong> ${item.location}</p>
-        <p><strong>Price:</strong> KES ${item.price}</p>
-        <p>${item.description || ""}</p>
-        <p><strong>Contact:</strong> ${item.contact}</p>
+         <p><strong>Type:</strong> <span class="bold-info">${item.type}</span></p>
+  <p><strong>Location:</strong> ${item.location}</p>
+  <p><strong>Price:</strong> <span class="bold-info">KES ${item.price}</span></p>
+  <p class="description">${item.description || ""}</p>
+  <p><strong>Contact:</strong> ${item.contact}</p>
       `;
 
       const imageArray = Array.isArray(item.images) ? item.images : [];
