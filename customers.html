@@ -117,63 +117,70 @@
     () => alert("Location access denied.")
   );
 
-  function loadListings() {
-    const filterType = document.getElementById("filterType").value;
-    const filterLocation = document.getElementById("filterLocation").value;
-    const minPrice = parseInt(document.getElementById("minPrice").value) || 0;
-    const maxPrice = parseInt(document.getElementById("maxPrice").value) || Infinity;
+ function loadListings() {
+  const filterType = document.getElementById("filterType").value;
+  const filterLocation = document.getElementById("filterLocation").value;
+  const minPrice = parseInt(document.getElementById("minPrice").value) || 0;
+  const maxPrice = parseInt(document.getElementById("maxPrice").value) || Infinity;
 
-    db.ref("listings").once("value", snapshot => {
-      const data = snapshot.val();
-      const listingsDiv = document.getElementById("listings");
-      listingsDiv.innerHTML = "";
+  db.ref("listings").once("value", snapshot => {
+    const data = snapshot.val();
+    const listingsDiv = document.getElementById("listings");
+    listingsDiv.innerHTML = "";
 
-      if (!data) {
-        listingsDiv.innerHTML = "<p>No listings found.</p>";
-        return;
-      }
+    if (!data) {
+      listingsDiv.innerHTML = "<p>No listings found.</p>";
+      return;
+    }
 
-      for (let id in data) {
-        const item = data[id];
-        if (
-          (filterType && item.type !== filterType) ||
-          (filterLocation && item.location !== filterLocation) ||
-          (item.price < minPrice || item.price > maxPrice)
-        ) continue;
-
-        const card = document.createElement("div");
-        card.className = "card";
-        card.innerHTML = `
-          <p><strong>Type:</strong> ${item.type}</p>
-          <p><strong>Location:</strong> ${item.location}</p>
-          <p><strong>Price:</strong> KES ${item.price}</p>
-          <p>${item.description}</p>
-          <p><strong>Contact:</strong> ${item.contact}</p>
-        `;
-
-        if (item.images && item.images.length > 0) {
-          item.images.forEach(url => {
-            const img = document.createElement("img");
-            img.src = url;
-            img.className = "property";
-            card.appendChild(img);
-          });
-        }
-
-        const mapId = "map-" + id;
-        const btn = document.createElement("button");
-        btn.textContent = "📍 Show Directions";
-        btn.onclick = () => showMapForListing(item.lat, item.lng, mapId);
-
-        const mapDiv = document.createElement("div");
-        mapDiv.id = mapId;
-
-        card.appendChild(btn);
-        card.appendChild(mapDiv);
-        listingsDiv.appendChild(card);
-      }
+    const sortedEntries = Object.entries(data).sort((a, b) => {
+      const tA = a[1].timestamp || 0;
+      const tB = b[1].timestamp || 0;
+      return tB - tA; // newest first
     });
-  }
+
+    for (const [id, item] of sortedEntries) {
+      if (
+        (filterType && item.type !== filterType) ||
+        (filterLocation && item.location !== filterLocation) ||
+        (item.price < minPrice || item.price > maxPrice)
+      ) continue;
+
+      const card = document.createElement("div");
+      card.className = "card";
+      card.innerHTML = `
+        <p><strong>Type:</strong> ${item.type}</p>
+        <p><strong>Location:</strong> ${item.location}</p>
+        <p><strong>Price:</strong> KES ${item.price}</p>
+        <p>${item.description || ""}</p>
+        <p><strong>Contact:</strong> ${item.contact}</p>
+      `;
+
+      const imageArray = Array.isArray(item.images) ? item.images : [];
+      if (imageArray.length > 0) {
+        imageArray.forEach(url => {
+          const img = document.createElement("img");
+          img.src = url;
+          img.className = "property";
+          card.appendChild(img);
+        });
+      }
+
+      const mapId = "map-" + id;
+      const btn = document.createElement("button");
+      btn.textContent = "📍 Show Directions";
+      btn.onclick = () => showMapForListing(item.lat, item.lng, mapId);
+
+      const mapDiv = document.createElement("div");
+      mapDiv.id = mapId;
+
+      card.appendChild(btn);
+      card.appendChild(mapDiv);
+      listingsDiv.appendChild(card);
+    }
+  });
+}
+
 
   function showMapForListing(destLat, destLng, containerId) {
     const container = document.getElementById(containerId);
