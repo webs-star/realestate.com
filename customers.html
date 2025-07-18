@@ -43,17 +43,35 @@
     img.property {
       width: 100%; margin-bottom: 10px; border-radius: 10px;
     }
-    #listings {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+   
+	 #listings {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
       gap: 20px;
-      padding: 10px;
+      margin-top: 40px;
     }
-    .card button {
-      margin-top: 10px;
+    .listing-card {
+      background: #fff;
+      border-radius: 10px;
+      padding: 15px;
+      width: 300px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+    .listing-card img {
       width: 100%;
+      height: 180px;
+      object-fit: cover;
+      border-radius: 8px;
+      margin-bottom: 10px;
     }
-	
+    .listing-card button {
+      margin-top: 8px;
+      padding: 8px;
+      border: none;
+      border-radius: 5px;
+      font-size: 14px;
+      cursor: pointer;
 	
 	
 	
