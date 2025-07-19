@@ -13,10 +13,12 @@
   </style>
 </head>
 <body>
-  <h2>📞 Login with Phone</h2>
-  <input id="phone" placeholder="+254712345678"><button onclick="sendOTP()">Send OTP</button><br>
-  <input id="otp" placeholder="123456"><button onclick="verifyOTP()">Verify OTP</button>
-  <div id="recaptcha-container"></div>
+  <h2>📧 Login with Email</h2>
+  <input id="email" placeholder="Enter Email"><br>
+  <input id="password" type="password" placeholder="Enter Password"><br>
+  <button onclick="login()">Login</button>
+  <button onclick="signup()">Sign Up</button>
+  <button onclick="logout()">Logout</button>
 
   <div id="meetControls" style="display:none">
     <h2>🔑 Create/Join Meeting</h2>
@@ -47,34 +49,42 @@
   firebase.initializeApp(firebaseConfig);
   const db = firebase.database();
 
-  // --- Phone Auth ---
-  let confirmation;
-  window.onload = () => {
-    window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
-      size: 'invisible',
-      callback: response => console.log('reCAPTCHA resolved')
-    });
-  };
-
-  function sendOTP(){
-    const phone = document.getElementById('phone').value;
-    const appVerifier = window.recaptchaVerifier;
-    firebase.auth().signInWithPhoneNumber(phone, appVerifier)
-      .then(c => { confirmation = c; alert('OTP sent'); })
-      .catch(err => {
-        alert("OTP send failed");
-        console.error(err);
-      });
-  }
-
-  function verifyOTP(){
-    confirmation.confirm(document.getElementById('otp').value)
-      .then(userC => {
-        alert('Logged in!');
+  // --- Email Auth ---
+  function login() {
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+    firebase.auth().signInWithEmailAndPassword(email, password)
+      .then(() => {
+        alert("Logged in");
         document.getElementById('meetControls').style.display = 'block';
       })
-      .catch(console.error);
+      .catch(err => alert("Login failed: " + err.message));
   }
+
+  function signup() {
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+    firebase.auth().createUserWithEmailAndPassword(email, password)
+      .then(() => {
+        alert("User created. You can now log in.");
+      })
+      .catch(err => alert("Signup failed: " + err.message));
+  }
+
+  function logout() {
+    firebase.auth().signOut().then(() => {
+      alert("Logged out");
+      document.getElementById('meetControls').style.display = 'none';
+    });
+  }
+
+  firebase.auth().onAuthStateChanged(user => {
+    if (user) {
+      document.getElementById('meetControls').style.display = 'block';
+    } else {
+      document.getElementById('meetControls').style.display = 'none';
+    }
+  });
 
   // --- PeerJS for Video ---
   let localStream, peer, conn, callRef;
@@ -137,3 +147,17 @@
 </script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
