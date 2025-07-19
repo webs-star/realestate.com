@@ -35,8 +35,8 @@
   <div id="chat"></div>
   <input id="chatMsg" placeholder="Type and hit Enter">
 
+<!-- ✅ Replace the entire <script> tag at the bottom of your HTML with this updated version -->
 <script>
-  // --- Firebase init ---
   const firebaseConfig = {
     apiKey: "AIzaSyAYztz7z8L3SFOZgCpbwthzTXeuhojDisM",
     authDomain: "lead-tracker-a2181.firebaseapp.com",
@@ -49,15 +49,22 @@
   firebase.initializeApp(firebaseConfig);
   const db = firebase.database();
 
-  // --- Email Auth ---
+  let localStream, peer, callRef;
+
+  // Get media
+  navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+    .then(s => {
+      localStream = s;
+      document.getElementById('localVid').srcObject = s;
+    })
+    .catch(err => alert("Media access denied: " + err.message));
+
+  // Auth handlers
   function login() {
     const email = document.getElementById("email").value;
     const password = document.getElementById("password").value;
     firebase.auth().signInWithEmailAndPassword(email, password)
-      .then(() => {
-        alert("Logged in");
-        document.getElementById('meetControls').style.display = 'block';
-      })
+      .then(() => alert("Logged in"))
       .catch(err => alert("Login failed: " + err.message));
   }
 
@@ -65,9 +72,7 @@
     const email = document.getElementById("email").value;
     const password = document.getElementById("password").value;
     firebase.auth().createUserWithEmailAndPassword(email, password)
-      .then(() => {
-        alert("User created. You can now log in.");
-      })
+      .then(() => alert("User created"))
       .catch(err => alert("Signup failed: " + err.message));
   }
 
@@ -79,56 +84,53 @@
   }
 
   firebase.auth().onAuthStateChanged(user => {
-    if (user) {
-      document.getElementById('meetControls').style.display = 'block';
-    } else {
-      document.getElementById('meetControls').style.display = 'none';
-    }
+    document.getElementById('meetControls').style.display = user ? 'block' : 'none';
   });
 
-  // --- PeerJS for Video ---
-  let localStream, peer, conn, callRef;
-  navigator.mediaDevices.getUserMedia({video:true,audio:true})
-    .then(s => { localStream = s; document.getElementById('localVid').srcObject = s; });
+  // Meeting Functions
+  function createMeeting() {
+    const m = document.getElementById('meetName').value.trim();
+    if (!m) return alert('Enter meeting name');
 
-  function createPeerCallback(meetName){
-    peer = new Peer(meetName, { debug: 1 });
+    peer = new Peer(m);
     peer.on('open', id => {
+      console.log("Peer ready with ID: " + id);
       peer.on('call', call => {
         call.answer(localStream);
-        call.on('stream', remote => document.getElementById('remoteVid').srcObject = remote);
+        call.on('stream', remote => {
+          document.getElementById('remoteVid').srcObject = remote;
+        });
       });
-      setupMeeting(meetName);
+      setupMeeting(m);
     });
   }
 
-  function createMeeting(){
-    const m = document.getElementById('meetName').value;
-    if (!m) return alert('Add meeting name');
-    createPeerCallback(m);
-  }
+  function joinMeeting() {
+    const m = document.getElementById('meetName').value.trim();
+    if (!m) return alert('Enter meeting name');
 
-  function joinMeeting(){
-    const m = document.getElementById('meetName').value;
-    if (!m) return alert('Add meeting name');
-    peer = new Peer({ debug: 1 });
+    peer = new Peer();
     peer.on('open', id => {
+      console.log("Peer open (joiner) ID: " + id);
       const call = peer.call(m, localStream);
-      call.on('stream', r => document.getElementById('remoteVid').srcObject = r);
+      call.on('stream', remote => {
+        document.getElementById('remoteVid').srcObject = remote;
+      });
       callRef = call;
       setupMeeting(m);
     });
   }
 
-  // --- Logging and Chat ---
-  function setupMeeting(meetName){
+  function setupMeeting(meetName) {
     const user = firebase.auth().currentUser;
-    if (!user) return alert("User not authenticated.");
+    if (!user) return alert("Not logged in");
 
     const uid = user.uid;
     db.ref(`meetings/${meetName}/logs`).push({ uid, at: Date.now() });
 
     const chatRef = db.ref(`meetings/${meetName}/chat`);
+    chatRef.off(); // Prevent multiple listeners
+
     chatRef.on('child_added', snap => {
       const { uid: u, text } = snap.val();
       const div = document.createElement('div');
@@ -136,15 +138,19 @@
       document.getElementById('chat').appendChild(div);
     });
 
-    document.getElementById('chatMsg').addEventListener('keypress', e => {
+    const chatInput = document.getElementById('chatMsg');
+    chatInput.onkeypress = e => {
       if (e.key === 'Enter') {
-        const txt = e.target.value;
+        const txt = chatInput.value.trim();
+        if (!txt) return;
         chatRef.push({ uid, text: txt, at: Date.now() });
-        e.target.value = '';
+        chatInput.value = '';
       }
-    });
+    };
   }
 </script>
+
+
 </body>
 </html>
 
