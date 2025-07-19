@@ -293,89 +293,77 @@ for (const [id, item] of sortedListings) {
   const div = document.createElement("div");
   div.className = "listing-card";
 
-  // Create a row for up to 2 images
- 
- const imageColumn = document.createElement("div");
-imageColumn.className = "image-column";
-(item.images || []).forEach(url => {
-  const img = document.createElement("img");
-  img.src = url;
-  img.className = "listing-img-vertical";
-  imageColumn.appendChild(img);
-});
+  // IMAGE
+  const imageColumn = document.createElement("div");
+  imageColumn.className = "image-column";
 
- 
- 
-  (item.images || []).slice(0, 2).forEach(url => {
+  if (item.images && item.images.length > 0) {
     const img = document.createElement("img");
-    img.src = url;
-    img.style.flex = "1";
+    img.src = item.images[0];
     img.style.height = "150px";
     img.style.objectFit = "cover";
     img.style.borderRadius = "8px";
     imageColumn.appendChild(img);
-  });
+  }
 
-  div.appendChild(imageColumn); // ✅ Use div here (not card)
-const info = document.createElement("div");
-info.innerHTML = `
-  <h4><b>${item.type}</b> – <b>KES ${item.price}</b></h4>
-  <p style="margin: 2px 0;"><strong>Location:</strong> ${item.location}</p>
-  <p style="margin: 2px 0;"><strong>Contact:</strong> ${item.contact}</p>
-  <ul class="description">
-    ${(item.description || "").split("\n").map(line => `<li>${line}</li>`).join("")}
-  </ul>
-`;
+  div.appendChild(imageColumn);
 
-
+  // INFO
+  const info = document.createElement("div");
+  info.innerHTML = `
+    <h4><b>${item.type}</b> – <b>KES ${item.price}</b></h4>
+    <p style="margin: 2px 0;"><strong>Location:</strong> ${item.location}</p>
+    <p style="margin: 2px 0;"><strong>Contact:</strong> ${item.contact}</p>
+    <ul class="description">
+      ${(item.description || "").split("\n").map(line => `<li>${line}</li>`).join("")}
+    </ul>
+  `;
   div.appendChild(info);
 
+  // EDIT/DELETE IF OWNER
+  if (item.userId === userId) {
+    const editBtn = document.createElement("button");
+    editBtn.textContent = "✏️ Edit";
+    editBtn.className = "edit-btn";
+    editBtn.onclick = () => {
+      const newType = prompt("Edit type:", item.type);
+      const newPrice = prompt("Edit price:", item.price);
+      const newLocation = prompt("Edit location:", item.location);
+      const newContact = prompt("Edit contact:", item.contact);
+      const newDescription = prompt("Edit description:", item.description || "");
 
+      if (newType && newPrice && newLocation && newContact) {
+        db.ref("listings/" + id).update({
+          type: newType,
+          price: parseInt(newPrice),
+          location: newLocation,
+          contact: newContact,
+          description: newDescription
+        }).then(() => {
+          alert("✅ Listing updated.");
+        }).catch(err => {
+          alert("❌ Error updating: " + err.message);
+        });
+      }
+    };
 
+    const delBtn = document.createElement("button");
+    delBtn.textContent = "🗑️ Delete";
+    delBtn.className = "delete-btn";
+    delBtn.onclick = () => {
+      if (confirm("Delete this listing?")) {
+        db.ref("listings/" + id).remove();
+      }
+    };
 
-    // Only show edit/delete if user is the owner
-    if (item.userId === userId) {
-      const editBtn = document.createElement("button");
-      editBtn.textContent = "✏️ Edit";
-      editBtn.className = "edit-btn";
-      editBtn.onclick = () => {
-        const newType = prompt("Edit type:", item.type);
-        const newPrice = prompt("Edit price:", item.price);
-        const newLocation = prompt("Edit location:", item.location);
-        const newContact = prompt("Edit contact:", item.contact);
-        const newDescription = prompt("Edit description:", item.description || "");
-
-        if (newType && newPrice && newLocation && newContact) {
-          db.ref("listings/" + id).update({
-            type: newType,
-            price: parseInt(newPrice),
-            location: newLocation,
-            contact: newContact,
-            description: newDescription
-          }).then(() => {
-            alert("✅ Listing updated.");
-            // no reload needed
-          }).catch(err => {
-            alert("❌ Error updating: " + err.message);
-          });
-        }
-      };
-
-      const delBtn = document.createElement("button");
-      delBtn.textContent = "🗑️ Delete";
-      delBtn.className = "delete-btn";
-      delBtn.onclick = () => {
-        if (confirm("Delete this listing?")) {
-          db.ref("listings/" + id).remove();
-        }
-      };
-
-      div.appendChild(editBtn);
-      div.appendChild(delBtn);
-    }
-
-    listingsDiv.appendChild(div);
+    div.appendChild(editBtn);
+    div.appendChild(delBtn);
   }
+
+  // ✅ Append the full card just ONCE
+  listingsDiv.appendChild(div);
+}
+
 });
 
 
