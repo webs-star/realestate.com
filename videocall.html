@@ -16,6 +16,8 @@
   <h2>📞 Login with Phone</h2>
   <input id="phone" placeholder="+254712345678"><button onclick="sendOTP()">Send OTP</button><br>
   <input id="otp" placeholder="123456"><button onclick="verifyOTP()">Verify OTP</button>
+  <div id="recaptcha-container"></div>
+
   <div id="meetControls" style="display:none">
     <h2>🔑 Create/Join Meeting</h2>
     <input id="meetName" placeholder="Meeting Name">
@@ -34,25 +36,37 @@
 <script>
   // --- Firebase init ---
   const firebaseConfig = {
-  apiKey: "AIzaSyAYztz7z8L3SFOZgCpbwthzTXeuhojDisM",
-  authDomain: "lead-tracker-a2181.firebaseapp.com",
-  databaseURL: "https://lead-tracker-a2181-default-rtdb.firebaseio.com",
-  projectId: "lead-tracker-a2181",
-  storageBucket: "lead-tracker-a2181.firebasestorage.app",
-  messagingSenderId: "601818438359",
-  appId: "1:601818438359:web:44f4c05db3d732d29dee92"
-};
+    apiKey: "AIzaSyAYztz7z8L3SFOZgCpbwthzTXeuhojDisM",
+    authDomain: "lead-tracker-a2181.firebaseapp.com",
+    databaseURL: "https://lead-tracker-a2181-default-rtdb.firebaseio.com",
+    projectId: "lead-tracker-a2181",
+    storageBucket: "lead-tracker-a2181.appspot.com",
+    messagingSenderId: "601818438359",
+    appId: "1:601818438359:web:44f4c05db3d732d29dee92"
+  };
+  firebase.initializeApp(firebaseConfig);
   const db = firebase.database();
 
   // --- Phone Auth ---
   let confirmation;
+  window.onload = () => {
+    window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
+      size: 'invisible',
+      callback: response => console.log('reCAPTCHA resolved')
+    });
+  };
+
   function sendOTP(){
     const phone = document.getElementById('phone').value;
-    window.recaptcha = new firebase.auth.RecaptchaVerifier(document.body, { size: 'invisible' });
-    firebase.auth().signInWithPhoneNumber(phone, window.recaptcha)
+    const appVerifier = window.recaptchaVerifier;
+    firebase.auth().signInWithPhoneNumber(phone, appVerifier)
       .then(c => { confirmation = c; alert('OTP sent'); })
-      .catch(console.error);
+      .catch(err => {
+        alert("OTP send failed");
+        console.error(err);
+      });
   }
+
   function verifyOTP(){
     confirmation.confirm(document.getElementById('otp').value)
       .then(userC => {
@@ -70,7 +84,6 @@
   function createPeerCallback(meetName){
     peer = new Peer(meetName, { debug: 1 });
     peer.on('open', id => {
-      // Listen for incoming calls
       peer.on('call', call => {
         call.answer(localStream);
         call.on('stream', remote => document.getElementById('remoteVid').srcObject = remote);
@@ -84,6 +97,7 @@
     if (!m) return alert('Add meeting name');
     createPeerCallback(m);
   }
+
   function joinMeeting(){
     const m = document.getElementById('meetName').value;
     if (!m) return alert('Add meeting name');
@@ -98,11 +112,12 @@
 
   // --- Logging and Chat ---
   function setupMeeting(meetName){
-    // Log join
-    const uid = firebase.auth().currentUser.uid;
+    const user = firebase.auth().currentUser;
+    if (!user) return alert("User not authenticated.");
+
+    const uid = user.uid;
     db.ref(`meetings/${meetName}/logs`).push({ uid, at: Date.now() });
 
-    // Chat setup
     const chatRef = db.ref(`meetings/${meetName}/chat`);
     chatRef.on('child_added', snap => {
       const { uid: u, text } = snap.val();
