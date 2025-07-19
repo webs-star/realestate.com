@@ -229,6 +229,24 @@ firebase.initializeApp(firebaseConfig);
 
 
 
+const db = firebase.database();
+
+firebase.auth().onAuthStateChanged(user => {
+  if (user) {
+    document.getElementById("uploadSection").style.display = "block";
+    document.getElementById("authSection").style.display = "none";
+    userId = user.uid;
+  } else {
+    document.getElementById("uploadSection").style.display = "none";
+    document.getElementById("authSection").style.display = "block";
+    userId = null;
+  }
+});
+
+
+
+  
+
   firebase.auth().onAuthStateChanged(user => {
     if (user) {
       document.getElementById("uploadSection").style.display = "block";
@@ -582,31 +600,17 @@ for (const [id, item] of sortedListings) {
   // ✅ Append the full card just ONCE
   listingsDiv.appendChild(div);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-firebase.auth().onAuthStateChanged(user => {
-  if (user) {
-    document.getElementById("propertyForm").style.display = "block";
-    document.getElementById("authSection").style.display = "none";
-    userId = user.uid;
-  } else {
-    document.getElementById("propertyForm").style.display = "none";
-    document.getElementById("authSection").style.display = "block";
-    userId = null;
-  }
 });
+
+
+
+
+
+
+
+
+
+
 
 
 
