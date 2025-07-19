@@ -166,11 +166,99 @@ ul.description {
   color: white;
 }
 
+
+
+
+
+
+
+
+
+
+    
+#listing-guidelines {
+    background: #fefefe;
+    border: 2px solid #4CAF50;
+    border-radius: 16px;
+    padding: 30px;
+    max-width: 800px;
+    margin: 40px auto;
+    font-family: "Segoe UI", sans-serif;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+  }
+
+  #listing-guidelines h2 {
+    font-size: 28px;
+    color: #2e7d32;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+
+  #listing-guidelines ol {
+    padding-left: 20px;
+    font-size: 18px;
+    color: #333;
+    line-height: 1.7;
+  }
+
+  #listing-guidelines ol li::marker {
+    color: #4CAF50;
+    font-weight: bold;
+  }
+
+  @media (max-width: 600px) {
+    #listing-guidelines {
+      padding: 20px;
+      font-size: 16px;
+    }
+    #listing-guidelines h2 {
+      font-size: 22px;
+    }
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
   </style>
 </head>
 
 <body>
 
+
+
+<div id="listing-guidelines">
+  <h2>📌 Property Listing Guidelines – RealPlot Connect</h2>
+  <ol>
+    <li>Only list your property when you are very close to it – the map saves your live location.</li>
+    <li>Delete your listing after the property is sold or leased to avoid confusion.</li>
+    <li>Double-check your listing on the map to ensure all details are accurate. Edit if incorrect.</li>
+    <li>In the <strong>Location</strong> field, write: County Subcounty Town/Village (e.g. Nakuru Rongai Menengai). <em>No commas or dashes.</em></li>
+    <li>Write the full <strong>price</strong> (e.g. <code>3000000</code> not <code>3M</code>).</li>
+    <li>Write the <strong>description</strong> as short bullet points – not one long paragraph.</li>
+    <li>Upload <strong>only one best image</strong> and use description to explain key features.</li>
+  </ol>
+</div>
+
+
+
+
+
+
+
+  
 <h2>📤 Upload Property Listing</h2>
 <form id="uploadForm">
   <select id="type" required>
