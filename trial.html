@@ -25,7 +25,8 @@
   <!-- Firebase (for listings and auth) -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+
 
   <!-- Cloudinary (media upload) + Axios -->
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
@@ -37,8 +38,7 @@
   <script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.min.js"></script>
 
   <!-- Favicon -->
- <link rel="icon" href="data:," />
-
+  <link rel="icon" href="/favicon.ico" />
 
 
 
@@ -213,6 +213,7 @@ ul.description {
 </head>
 
 <body>
+
 <script>
 
 const firebaseConfig = {
@@ -231,30 +232,28 @@ firebase.initializeApp(firebaseConfig);
 
 const db = firebase.database();
 
+
+
+
 firebase.auth().onAuthStateChanged(user => {
   if (user) {
+    // Show upload section
     document.getElementById("uploadSection").style.display = "block";
     document.getElementById("authSection").style.display = "none";
     userId = user.uid;
+
+    // Optional: Scroll to upload section
+    document.getElementById("uploadSection").scrollIntoView({ behavior: "smooth" });
+
   } else {
+    // Show login section
     document.getElementById("uploadSection").style.display = "none";
     document.getElementById("authSection").style.display = "block";
     userId = null;
   }
 });
 
-
-
   
-
-  firebase.auth().onAuthStateChanged(user => {
-    if (user) {
-      document.getElementById("uploadSection").style.display = "block";
-    } else {
-      document.getElementById("uploadSection").style.display = "none";
-    }
-  });
-
 
   
 
@@ -267,7 +266,7 @@ window.googleLogin = () => {
     .then(result => {
       alert("Logged in as " + result.user.email);
       // Show the upload section without waiting for onAuthStateChanged
-      document.getElementById("uploadSection").style.display = "block";
+      
     })
     .catch(err => {
       alert("Login failed: " + err.message);
@@ -283,7 +282,7 @@ window.googleLogin = () => {
     .then(userCredential => {
       alert("Logged in as: " + userCredential.user.email);
       // Show the upload section manually without reloading
-      document.getElementById("uploadSection").style.display = "block";
+      
     })
     .catch(error => {
       alert("Login error: " + error.message);
@@ -374,7 +373,8 @@ window.googleLogin = () => {
 <div id="uploadSection" style="display: none;">
 
 
-<form>
+<form id="uploadForm">
+
   <select id="type" required>
     <option value="">Select Property Type</option>
     <option value="land">Land / Plots</option>
@@ -416,35 +416,28 @@ window.googleLogin = () => {
 
 
 
+
+
+
+
 <script>
-
-let userId = null;
-
-
-
-
-
-
-
-
-
-
+  
 
   const cloudName = "dwvt4e9o2";
   const uploadPreset = "unsigned_upload";
 
- const form = document.querySelector("form");
-
+  const form = document.getElementById("uploadForm");
   const imageInput = document.getElementById("images");
   const previewContainer = document.getElementById("previewContainer");
   const listingsDiv = document.getElementById("listings");
   const loading = document.getElementById("loading");
 
   let currentUserLatLng = null;
- 
- 
- 
- 
+  let userId = localStorage.getItem("realplot_user_id");
+  if (!userId) {
+    userId = "user_" + Date.now();
+    localStorage.setItem("realplot_user_id", userId);
+  }
 
   navigator.geolocation.getCurrentPosition(pos => {
     currentUserLatLng = { lat: pos.coords.latitude, lng: pos.coords.longitude };
@@ -590,27 +583,10 @@ for (const [id, item] of sortedListings) {
   // ✅ Append the full card just ONCE
   listingsDiv.appendChild(div);
 }
+
 });
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 </script>
-
-
 </body>
 </html>
