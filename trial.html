@@ -231,28 +231,37 @@ firebase.initializeApp(firebaseConfig);
 
 
   // 🔒 Make functions global
-  window.googleLogin = () => {
-    const provider = new firebase.auth.GoogleAuthProvider();
-    firebase.auth().signInWithPopup(provider)
-      .then(result => {
-        alert("Logged in as " + result.user.email);
-      })
-      .catch(err => {
-        alert("Login failed: " + err.message);
-      });
-  };
+  
+window.googleLogin = () => {
+  const provider = new firebase.auth.GoogleAuthProvider();
+  firebase.auth().signInWithPopup(provider)
+    .then(result => {
+      alert("Logged in as " + result.user.email);
+      // Show the upload section without waiting for onAuthStateChanged
+      document.getElementById("uploadSection").style.display = "block";
+    })
+    .catch(err => {
+      alert("Login failed: " + err.message);
+    });
+};
+
+ 
 
   window.login = () => {
-    const email = document.getElementById("email").value;
-    const password = document.getElementById("password").value;
-    firebase.auth().signInWithEmailAndPassword(email, password)
-      .then(userCredential => {
-        alert("Logged in as: " + userCredential.user.email);
-      })
-      .catch(error => {
-        alert("Login error: " + error.message);
-      });
-  };
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+  firebase.auth().signInWithEmailAndPassword(email, password)
+    .then(userCredential => {
+      alert("Logged in as: " + userCredential.user.email);
+      // Show the upload section manually without reloading
+      document.getElementById("uploadSection").style.display = "block";
+    })
+    .catch(error => {
+      alert("Login error: " + error.message);
+    });
+};
+
+  
 
   window.register = () => {
     const email = document.getElementById("email").value;
