@@ -271,6 +271,31 @@ firebase.initializeApp(firebaseConfig);
       alert("Logged out");
     });
   };
+
+
+
+
+
+
+
+  firebase.auth().onAuthStateChanged(user => {
+    if (user) {
+      document.getElementById("uploadSection").style.display = "block";
+    } else {
+      document.getElementById("uploadSection").style.display = "none";
+    }
+  });
+
+
+
+
+
+
+
+
+
+
+  
 </script>
 
 
