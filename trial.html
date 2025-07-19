@@ -229,6 +229,17 @@ firebase.initializeApp(firebaseConfig);
 
 
 
+  firebase.auth().onAuthStateChanged(user => {
+    if (user) {
+      document.getElementById("uploadSection").style.display = "block";
+    } else {
+      document.getElementById("uploadSection").style.display = "none";
+    }
+  });
+
+
+  
+
 
   // 🔒 Make functions global
   
@@ -285,15 +296,6 @@ window.googleLogin = () => {
 
 
 
-
-
-  firebase.auth().onAuthStateChanged(user => {
-    if (user) {
-      document.getElementById("uploadSection").style.display = "block";
-    } else {
-      document.getElementById("uploadSection").style.display = "none";
-    }
-  });
 
 
 
