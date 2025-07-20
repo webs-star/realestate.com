@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>Agora Meeting</title>
-  <script src="https://download.agora.io/sdk/release/AgoraRTC_N.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/agora-rtc-sdk-ng@4.11.0/index.global.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 </head>
@@ -58,34 +58,35 @@
     // 🧠 Agora Setup
     const APP_ID = "52b4825840fb439aa345f60bd1a4fe8d";
     let client;
-    let localTrack;
+    let localTracks = {
+      videoTrack: null,
+      audioTrack: null
+    };
 
     async function startMeeting() {
       const channel = document.getElementById("channelName").value.trim();
       if (!channel) return alert("Enter a channel name");
 
-      // Create Agora client
       client = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
 
-      // Join channel
-      const UID = await client.join(APP_ID, channel, null, null);
+      await client.join(APP_ID, channel, null, null);
 
-      // Create local track
-      localTrack = await AgoraRTC.createMicrophoneAndCameraTracks();
+      const tracks = await AgoraRTC.createMicrophoneAndCameraTracks();
+      localTracks.audioTrack = tracks[0];
+      localTracks.videoTrack = tracks[1];
 
-      // Play local video
       const player = document.createElement("div");
-      player.id = UID;
+      player.id = "local-player";
       player.style.width = "640px";
       player.style.height = "480px";
       document.getElementById("local-stream").appendChild(player);
-      localTrack[1].play(UID);
 
-      // Publish tracks
-      await client.publish(localTrack);
+      localTracks.videoTrack.play("local-player");
+
+      await client.publish([localTracks.audioTrack, localTracks.videoTrack]);
+
       alert("Meeting started!");
     }
   </script>
 </body>
 </html>
-
