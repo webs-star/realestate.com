@@ -230,69 +230,61 @@ function loadListings() {
       const tB = b[1].timestamp || 0;
       return tB - tA;
     });
+for (const [id, item] of sortedEntries) {
+  const itemType = (item.type || "").toLowerCase().trim();
+  const itemPurpose = (item.purpose || "").toLowerCase().trim();
+  const itemLocation = (item.location || "").toLowerCase().trim();
 
-    for (const [id, item] of sortedEntries) {
-      const itemType = (item.type || "").toLowerCase().trim();
-      const itemPurpose = (item.purpose || "").toLowerCase().trim();
-      const itemLocation = (item.location || "").toLowerCase().trim();
+  const itemLocationWords = itemLocation.split(/[\s,-]+/);
+  const filterWords = filterLoc.split(/[\s,-]+/);
 
-      const itemLocationWords = itemLocation.split(/[\s,-]+/);
-      const filterWords = filterLoc.split(/[\s,-]+/);
+  const locationMatch = filterLoc === "" || filterWords.some(word =>
+    itemLocationWords.includes(word)
+  );
+  const typeMatch = filterType === "" || itemType.includes(filterTypeVal);
+  const purposeMatch = filterPurpose === "" || itemPurpose === filterPurposeVal;
+  const priceMatch = item.price >= minPrice && item.price <= maxPrice;
 
-      const locationMatch = filterLoc === "" || filterWords.some(word =>
-        itemLocationWords.includes(word)
-      );
-      const typeMatch = filterType === "" || itemType.includes(filterTypeVal);
-      const purposeMatch = filterPurpose === "" || itemPurpose === filterPurposeVal;
-      const priceMatch = item.price >= minPrice && item.price <= maxPrice;
+  if (!typeMatch || !purposeMatch || !locationMatch || !priceMatch) continue;
 
-      if (!typeMatch || !purposeMatch || !locationMatch || !priceMatch) continue;
+  const card = document.createElement("div");
+  card.className = "listing-card";
+  card.innerHTML = `
+    <p><strong>Type:</strong> <span class="bold-info type">${item.type}</span></p>
+    <p><strong>Purpose:</strong> <span class="bold-info purpose">${item.purpose || "N/A"}</span></p>
+    <p><strong>Location:</strong> <span class="bold-info location">${item.location}</span></p>
+    <p><strong>Price:</strong> <span class="bold-info price">KES ${item.price}</span></p>
+    <ul class="description">
+      ${(item.description || "").split("\n").map(line => `<li>${line}</li>`).join("")}
+    </ul>
+    <p><strong>Contact:</strong> <span class="bold-info contact">${item.contact}</span></p>
+  `;
 
-      const card = document.createElement("div");
-      card.className = "listing-card";
-      card.innerHTML = `
-        <p><strong>Type:</strong> <span class="bold-info type">${item.type}</span></p>
-        <p><strong>Purpose:</strong> <span class="bold-info purpose">${item.purpose || "N/A"}</span></p>
-        <p><strong>Location:</strong> <span class="bold-info location">${item.location}</span></p>
-        <p><strong>Price:</strong> <span class="bold-info price">KES ${item.price}</span></p>
-        <ul class="description">
-          ${(item.description || "").split("\n").map(line => `<li>${line}</li>`).join("")}
-        </ul>
-        <p><strong>Contact:</strong> <span class="bold-info contact">${item.contact}</span></p>
-      `;
+  // ✅ Add images
+  const imageArray = Array.isArray(item.images) ? item.images : [];
+  if (imageArray.length > 0) {
+    imageArray.forEach(url => {
+      const img = document.createElement("img");
+      img.src = url;
+      img.className = "property";
+      card.appendChild(img);
+    });
+  }
 
-      listingsDiv.appendChild(card);
-    }
-  });
+  // ✅ Add map button and div
+  const mapId = "map-" + id;
+  const btn = document.createElement("button");
+  btn.textContent = "📍 Show Directions";
+  btn.onclick = () => showMapForListing(item.lat, item.lng, mapId);
+
+  const mapDiv = document.createElement("div");
+  mapDiv.id = mapId;
+
+  card.appendChild(btn);
+  card.appendChild(mapDiv);
+
+  listingsDiv.appendChild(card); // ✅ Append the full card
 }
-
-     
-
-      const imageArray = Array.isArray(item.images) ? item.images : [];
-      if (imageArray.length > 0) {
-        imageArray.forEach(url => {
-          const img = document.createElement("img");
-          img.src = url;
-          img.className = "property";
-          card.appendChild(img);
-        });
-      }
-
-      const mapId = "map-" + id;
-      const btn = document.createElement("button");
-      btn.textContent = "📍 Show Directions";
-      btn.onclick = () => showMapForListing(item.lat, item.lng, mapId);
-
-      const mapDiv = document.createElement("div");
-      mapDiv.id = mapId;
-
-      card.appendChild(btn);
-      card.appendChild(mapDiv);
-      listingsDiv.appendChild(card);
-    }
-  });
-}
-
 
 
   function showMapForListing(destLat, destLng, containerId) {
