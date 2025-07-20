@@ -158,12 +158,13 @@ ul.description {
       <option value="resort">Resort / Hotel</option>
     </select>
     
-    <select id="filterPurpose">
+    
+<select id="filterPurpose">
   <option value="">All Purposes</option>
-  <option value="For Sale">For Sale</option>
-  <option value="For Rent">For Rent</option>
-  <option value="For Lease">For Lease</option>
-  <option value="For BnB">For BnB</option>
+  <option value="sale">For Sale</option>
+  <option value="rent">For Rent</option>
+  <option value="lease">For Lease</option>
+  <option value="bnb">For BnB</option>
 </select>
 
     
@@ -209,6 +210,7 @@ ul.description {
   const filterLocation = document.getElementById("filterLocation").value;
   const minPrice = parseInt(document.getElementById("minPrice").value) || 0;
   const maxPrice = parseInt(document.getElementById("maxPrice").value) || Infinity;
+   const filterPurpose = document.getElementById("filterPurpose").value.toLowerCase().trim();
 
   db.ref("listings").once("value", snapshot => {
     const data = snapshot.val();
@@ -226,25 +228,27 @@ ul.description {
       return tB - tA; // newest first
     });
  for (const [id, item] of sortedEntries) {
-  const itemType = (item.type || "").toLowerCase().trim();
-  const itemLocation = (item.location || "").toLowerCase().trim();
-  const filterTypeVal = filterType.toLowerCase().trim();
-   const filterPurpose = document.getElementById("filterPurpose").value.toLowerCase().trim();
-  const filterLoc = filterLocation.toLowerCase().trim();
+ const itemType = (item.type || "").toLowerCase().trim();
+const itemLocation = (item.location || "").toLowerCase().trim();
+const itemPurpose = (item.purpose || "").toLowerCase().trim(); // ✅ only once
 
-  // Match any word in location (e.g., "lamu mpeketoni" should match "lamu" or "mpeketoni")
-  const itemLocationWords = itemLocation.split(/[\s,-]+/); // splits on space, comma, or dash
-  const filterWords = filterLoc.split(/[\s,-]+/);
+const filterTypeVal = filterType.toLowerCase().trim();
 
-  const locationMatch = filterLoc === "" || filterWords.some(word =>
-    itemLocationWords.includes(word)
-  );
+const filterLoc = filterLocation.toLowerCase().trim();
 
-  const typeMatch = filterType === "" || itemType.includes(filterTypeVal);
-   const purposeMatch = filterPurpose === "" || itemPurpose === filterPurpose;
-  const priceMatch = item.price >= minPrice && item.price <= maxPrice;
+const itemLocationWords = itemLocation.split(/[\s,-]+/);
+const filterWords = filterLoc.split(/[\s,-]+/);
 
- if (!typeMatch || !purposeMatch || !locationMatch || !priceMatch) continue;
+const locationMatch = filterLoc === "" || filterWords.some(word =>
+  itemLocationWords.includes(word)
+);
+const typeMatch = filterType === "" || itemType.includes(filterTypeVal);
+const purposeMatch = filterPurpose === "" || itemPurpose === filterPurpose;
+
+const priceMatch = item.price >= minPrice && item.price <= maxPrice;
+
+if (!typeMatch || !purposeMatch || !locationMatch || !priceMatch) continue;
+
 
   // Continue with rendering the card...
 
@@ -266,16 +270,25 @@ card.innerHTML = `
 `;
 
      
+const imageArray = Array.isArray(item.images) ? item.images : [];
+if (imageArray.length > 0) {
+  const img = document.createElement("img");
+  img.src = imageArray[0];
+  img.className = "property";
+  img.style.transition = "opacity 0.5s ease-in-out";
+  card.appendChild(img);
 
-      const imageArray = Array.isArray(item.images) ? item.images : [];
-      if (imageArray.length > 0) {
-        imageArray.forEach(url => {
-          const img = document.createElement("img");
-          img.src = url;
-          img.className = "property";
-          card.appendChild(img);
-        });
-      }
+  let index = 0;
+  setInterval(() => {
+    index = (index + 1) % imageArray.length;
+    img.style.opacity = 0;
+    setTimeout(() => {
+      img.src = imageArray[index];
+      img.style.opacity = 1;
+    }, 400);
+  }, 10000); // ⏱️ 10 seconds per image
+}
+
 
       const mapId = "map-" + id;
       const btn = document.createElement("button");
