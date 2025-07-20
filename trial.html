@@ -405,14 +405,7 @@ window.googleLogin = () => {
 
 <div id="uploadSection" style="display: none;">
   <form id="uploadForm">
-    <!-- Listing Purpose Dropdown -->
-    <select id="Purpose" required>
-      <option value="">Select Listing Purpose</option>
-      <option value="sale">For Sale</option>
-      <option value="rent">For Rent</option>
-      <option value="lease">For Lease</option>
-      <option value="bnb">For BNB</option>
-    </select>
+  
 
     <!-- Property Type Dropdown -->
     <select id="type" required>
@@ -437,6 +430,17 @@ window.googleLogin = () => {
       <option value="resort">Resort / Hotel</option>
     </select>
 
+
+  <!-- Listing Purpose Dropdown -->
+    <select id="Purpose" required>
+      <option value="">Select Listing Purpose</option>
+      <option value="sale">For Sale</option>
+      <option value="rent">For Rent</option>
+      <option value="lease">For Lease</option>
+      <option value="bnb">For BNB</option>
+    </select>
+
+    
     <!-- Other Inputs -->
     <input type="text" id="location" placeholder="Location (County, Town)" required />
     <input type="number" id="price" placeholder="Price (KES)" required />
