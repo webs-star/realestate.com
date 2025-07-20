@@ -63,30 +63,31 @@
       audioTrack: null
     };
 
-    async function startMeeting() {
-      const channel = document.getElementById("channelName").value.trim();
-      if (!channel) return alert("Enter a channel name");
+  async function startMeeting() {
+  const channel = document.getElementById("channelName").value.trim();
+  if (!channel) return alert("Enter a channel name");
 
-      client = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
+  client = window.AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
 
-      await client.join(APP_ID, channel, null, null);
+  await client.join(APP_ID, channel, null, null);
 
-      const tracks = await AgoraRTC.createMicrophoneAndCameraTracks();
-      localTracks.audioTrack = tracks[0];
-      localTracks.videoTrack = tracks[1];
+  const tracks = await window.AgoraRTC.createMicrophoneAndCameraTracks();
+  localTracks.audioTrack = tracks[0];
+  localTracks.videoTrack = tracks[1];
 
-      const player = document.createElement("div");
-      player.id = "local-player";
-      player.style.width = "640px";
-      player.style.height = "480px";
-      document.getElementById("local-stream").appendChild(player);
+  const player = document.createElement("div");
+  player.id = "local-player";
+  player.style.width = "640px";
+  player.style.height = "480px";
+  document.getElementById("local-stream").appendChild(player);
 
-      localTracks.videoTrack.play("local-player");
+  localTracks.videoTrack.play("local-player");
 
-      await client.publish([localTracks.audioTrack, localTracks.videoTrack]);
+  await client.publish([localTracks.audioTrack, localTracks.videoTrack]);
 
-      alert("Meeting started!");
-    }
+  alert("Meeting started!");
+}
+
   </script>
 </body>
 </html>
