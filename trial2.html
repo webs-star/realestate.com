@@ -119,7 +119,16 @@ ul.description {
 }
 
  
-   
+    .bold-info {
+    font-weight: bold;
+    font-size: 1.2em;
+  }
+
+  .type    { color: #007BFF; }  /* Blue */
+  .purpose { color: #28A745; }  /* Green */
+  .location { color: #6F42C1; } /* Purple */
+  .price   { color: #DC3545; }  /* Red */
+  .contact { color: #FFC107; } /* Yellow/Orange */
   </style>
 </head>
 <body>
@@ -241,22 +250,22 @@ ul.description {
 
 
 
+const card = document.createElement("div");
+card.className = "listing-card";
+card.innerHTML = `
+  <p><strong>Type:</strong> <span class="bold-info type">${item.type}</span></p>
+  <p><strong>Purpose:</strong> <span class="bold-info purpose">${item.purpose || "N/A"}</span></p>
+  <p><strong>Location:</strong> <span class="bold-info location">${item.location}</span></p>
+  <p><strong>Price:</strong> <span class="bold-info price">KES ${item.price}</span></p>
 
-      const card = document.createElement("div");
-card.className = "listing-card"; // <-- Add this line
-      card.innerHTML = `
-         <p><strong>Type:</strong> <span class="bold-info">${item.type}</span></p>
-          <p><strong>Purpose:</strong> <span class="bold-info">${item.purpose || "N/A"}</span></p> <!-- ✅ Add this line -->
-  <p><strong>Location:</strong> ${item.location}</p>
-  <p><strong>Price:</strong> <span class="bold-info">KES ${item.price}</span></p>
- 
- <ul class="description">
-  ${(item.description || "").split("\n").map(line => `<li>${line}</li>`).join("")}
-</ul>
- 
- 
-  <p><strong>Contact:</strong> ${item.contact}</p>
-      `;
+  <ul class="description">
+    ${(item.description || "").split("\n").map(line => `<li>${line}</li>`).join("")}
+  </ul>
+
+  <p><strong>Contact:</strong> <span class="bold-info contact">${item.contact}</span></p>
+`;
+
+     
 
       const imageArray = Array.isArray(item.images) ? item.images : [];
       if (imageArray.length > 0) {
