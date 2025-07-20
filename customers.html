@@ -226,33 +226,27 @@ ul.description {
       return tB - tA; // newest first
     });
  for (const [id, item] of sortedEntries) {
-  const itemType = (item.type || "").toLowerCase().trim();
-  const itemLocation = (item.location || "").toLowerCase().trim();
-   const itemPurpose = (item.purpose || "").toLowerCase().trim();
+ const itemType = (item.type || "").toLowerCase().trim();
+const itemLocation = (item.location || "").toLowerCase().trim();
+const itemPurpose = (item.purpose || "").toLowerCase().trim(); // ✅ only once
 
-  const filterTypeVal = filterType.toLowerCase().trim();
-   const filterPurpose = document.getElementById("filterPurpose").value.toLowerCase().trim();
-  const filterLoc = filterLocation.toLowerCase().trim();
+const filterTypeVal = filterType.toLowerCase().trim();
+const filterPurpose = document.getElementById("filterPurpose").value.toLowerCase().trim();
+const filterLoc = filterLocation.toLowerCase().trim();
 
-  // Match any word in location (e.g., "lamu mpeketoni" should match "lamu" or "mpeketoni")
-  const itemLocationWords = itemLocation.split(/[\s,-]+/); // splits on space, comma, or dash
-  const filterWords = filterLoc.split(/[\s,-]+/);
+const itemLocationWords = itemLocation.split(/[\s,-]+/);
+const filterWords = filterLoc.split(/[\s,-]+/);
 
-  const locationMatch = filterLoc === "" || filterWords.some(word =>
-    itemLocationWords.includes(word)
-  );
-
-  const typeMatch = filterType === "" || itemType.includes(filterTypeVal);
-
-
-
+const locationMatch = filterLoc === "" || filterWords.some(word =>
+  itemLocationWords.includes(word)
+);
+const typeMatch = filterType === "" || itemType.includes(filterTypeVal);
 const purposeMatch = filterPurpose === "" || itemPurpose === filterPurpose;
 
+const priceMatch = item.price >= minPrice && item.price <= maxPrice;
 
-   
-  const priceMatch = item.price >= minPrice && item.price <= maxPrice;
+if (!typeMatch || !purposeMatch || !locationMatch || !priceMatch) continue;
 
- if (!typeMatch || !purposeMatch || !locationMatch || !priceMatch) continue;
 
   // Continue with rendering the card...
 
