@@ -201,6 +201,47 @@ ul.description {
   margin-bottom: 10px;
   line-height: 1.5em;
 }
+
+
+ #authSection {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    background-color: #f9f9f9;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    max-width: 300px;
+    font-family: Arial, sans-serif;
+  }
+
+  #authSection input {
+    padding: 12px;
+    font-size: 18px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+  }
+
+  #authSection button {
+    padding: 12px;
+    font-size: 18px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+
+  #authSection button:hover {
+    background-color: #45a049;
+  }
+
+    
+    
     }
 
 
@@ -330,18 +371,53 @@ window.googleLogin = () => {
 
 
 
+<style>
+  #authSection {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    background-color: #f9f9f9;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    max-width: 300px;
+    font-family: Arial, sans-serif;
+  }
+
+  #authSection input {
+    padding: 12px;
+    font-size: 18px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+  }
+
+  #authSection button {
+    padding: 12px;
+    font-size: 18px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+
+  #authSection button:hover {
+    background-color: #45a049;
+  }
+</style>
 
 <div id="authSection">
   <input type="email" id="email" placeholder="Email" />
   <input type="password" id="password" placeholder="Password" />
   <button onclick="login()">Login</button>
- <button onclick="register()">Register</button>
-
+  <button onclick="register()">Register</button>
   <button onclick="logout()">Logout</button>
-  
   <button onclick="googleLogin()">Login with Google</button>
 </div>
-
 
 
 
