@@ -78,7 +78,7 @@
       audioTrack: null
     };
 
-  async function startMeeting() {
+async function startMeeting() {
   try {
     if (!window.AgoraRTC || !AgoraRTC.createClient) {
       return alert("❌ AgoraRTC not loaded correctly.");
@@ -89,7 +89,6 @@
 
     client = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
 
-    // ✅ Correct join (only 3 parameters: appId, channel, token)
     await client.join(APP_ID, channel, null);
 
     const [microphoneTrack, cameraTrack] = await AgoraRTC.createMicrophoneAndCameraTracks();
@@ -106,14 +105,7 @@
 
     await client.publish([localTracks.audioTrack, localTracks.videoTrack]);
 
-    alert("✅ Meeting started!");
-  } catch (err) {
-    console.error(err);
-    alert("❌ Error starting meeting: " + err.message);
-  }
-}
-
-    // Handle remote users
+    // ✅ THIS WAS MISSING
     client.on("user-published", async (user, mediaType) => {
       await client.subscribe(user, mediaType);
 
@@ -127,13 +119,17 @@
       }
 
       if (mediaType === "audio") {
-        user.audioTrack.play(); // 🔊 This plays their voice
+        user.audioTrack.play(); // 👂 Audio will now play
       }
     });
 
+    alert("✅ Meeting started!");
+  } catch (err) {
+    console.error(err);
+    alert("❌ Error starting meeting: " + err.message);
+  }
+}
 
-
-    
 
 async function joinMeeting() {
   const channel = document.getElementById("channelName").value.trim();
