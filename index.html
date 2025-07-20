@@ -240,7 +240,7 @@ ul.description {
     background-color: #45a049;
   }
 
-
+    
     
     }
 
@@ -351,9 +351,21 @@ window.googleLogin = () => {
   };
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
 </script>
-
-
 
 
 
@@ -364,10 +376,9 @@ window.googleLogin = () => {
   <input type="password" id="password" placeholder="Password" />
   <button onclick="login()">Login</button>
   <button onclick="register()">Register</button>
-  <button onclick="logout()">Logout</button><br><br>
+  <button onclick="logout()">Logout</button>
   <button onclick="googleLogin()">Login with Google</button>
 </div>
-
 
 
 
@@ -390,52 +401,65 @@ window.googleLogin = () => {
 
 
 
+<h2>📤 Upload Property Listing</h2>
+
+<div id="uploadSection" style="display: none;">
+  <form id="uploadForm">
+  
+
+    <!-- Property Type Dropdown -->
+    <select id="type" required>
+      <option value="">Select Property Type</option>
+      <option value="land">Land / Plots</option>
+      <option value="house">House</option>
+      <option value="apartment">Apartment / Flat</option>
+      <option value="bungalow">Bungalow</option>
+      <option value="maisonette">Maisonette</option>
+      <option value="bedsitter">Bedsitter</option>
+      <option value="single room">Single Room</option>
+      <option value="shop">Shop / Stall</option>
+      <option value="office">Office Space</option>
+      <option value="godown">Godown / Warehouse</option>
+      <option value="commercial building">Commercial Building</option>
+      <option value="leased">Leased Property</option>
+      <option value="rental">Rental Unit</option>
+      <option value="hostel">Student Hostel</option>
+      <option value="farm">Farm Land</option>
+      <option value="vacant land">Vacant Land</option>
+      <option value="industrial">Industrial Property</option>
+      <option value="resort">Resort / Hotel</option>
+    </select>
+
+
+  <!-- Listing Purpose Dropdown -->
+    <select id="purpose" required>
+      <option value="">Select Listing Purpose</option>
+      <option value="sale">For Sale</option>
+      <option value="rent">For Rent</option>
+      <option value="lease">For Lease</option>
+      <option value="bnb">For BNB</option>
+    </select>
+
+    
+    <!-- Other Inputs -->
+    <input type="text" id="location" placeholder="Location (County, Town)" required />
+    <input type="number" id="price" placeholder="Price (KES)" required />
+    <input type="tel" id="contact" placeholder="Phone number" required />
+    <textarea id="description" placeholder="Description (optional)"></textarea>
+
+    <input type="file" id="images" accept="image/*" multiple />
+    <div style="font-size: 0.9em; color: #777;">only 1 image, so choose the best</div>
+    <div id="previewContainer"></div>
+
+    <div id="loading">⏳ Uploading...</div>
+    <button type="submit">Submit</button>
+  </form>
+</div>
 
 
 
   
-<h2>📤 Upload Property Listing</h2>
 
-<div id="uploadSection" style="display: none;">
-
-
-<form id="uploadForm">
-
-  <select id="type" required>
-    <option value="">Select Property Type</option>
-    <option value="land">Land / Plots</option>
-    <option value="house">House</option>
-    <option value="apartment">Apartment / Flat</option>
-    <option value="bungalow">Bungalow</option>
-    <option value="maisonette">Maisonette</option>
-    <option value="bedsitter">Bedsitter</option>
-    <option value="single room">Single Room</option>
-    <option value="shop">Shop / Stall</option>
-    <option value="office">Office Space</option>
-    <option value="godown">Godown / Warehouse</option>
-    <option value="commercial building">Commercial Building</option>
-    <option value="leased">Leased Property</option>
-    <option value="rental">Rental Unit</option>
-    <option value="hostel">Student Hostel</option>
-    <option value="farm">Farm Land</option>
-    <option value="vacant land">Vacant Land</option>
-    <option value="industrial">Industrial Property</option>
-    <option value="resort">Resort / Hotel</option>
-  </select>
-
-  <input type="text" id="location" placeholder="Location (County, Town)" required />
-  <input type="number" id="price" placeholder="Price (KES)" required />
-  <input type="tel" id="contact" placeholder="Phone number" required />
-  <textarea id="description" placeholder="Description (optional)"></textarea>
-
-  <input type="file" id="images" accept="image/*" multiple /> <!-- No 'required' -->
-
-  <div style="font-size: 0.9em; color: #777;">only 1 image,so chhose the best</div>
-  <div id="previewContainer"></div>
-
-  <div id="loading">⏳ Uploading...</div>
-  <button type="submit">Submit</button>
-</form>
 
 <h2>🏘️ All Listings</h2>
 <div id="listings"></div>
@@ -509,6 +533,7 @@ if (files.length > 0) {
 
     const data = {
       type: document.getElementById("type").value,
+      purpose: document.getElementById("purpose").value,  // <- Add this line
       location: document.getElementById("location").value,
       price: parseInt(document.getElementById("price").value),
       contact: document.getElementById("contact").value,
@@ -558,6 +583,7 @@ for (const [id, item] of sortedListings) {
   const info = document.createElement("div");
   info.innerHTML = `
     <h4><b>${item.type}</b> – <b>KES ${item.price}</b></h4>
+    <p style="margin: 2px 0;"><strong>Purpose:</strong> ${item.purpose || "N/A"}</p>
     <p style="margin: 2px 0;"><strong>Location:</strong> ${item.location}</p>
     <p style="margin: 2px 0;"><strong>Contact:</strong> ${item.contact}</p>
     <ul class="description">
@@ -577,6 +603,7 @@ for (const [id, item] of sortedListings) {
       const newLocation = prompt("Edit location:", item.location);
       const newContact = prompt("Edit contact:", item.contact);
       const newDescription = prompt("Edit description:", item.description || "");
+const newPurpose = prompt("Edit purpose:", item.purpose || "");
 
       if (newType && newPrice && newLocation && newContact) {
         db.ref("listings/" + id).update({
@@ -584,7 +611,8 @@ for (const [id, item] of sortedListings) {
           price: parseInt(newPrice),
           location: newLocation,
           contact: newContact,
-          description: newDescription
+          description: newDescription,
+   purpose: newPurpose
         }).then(() => {
           alert("✅ Listing updated.");
         }).catch(err => {
