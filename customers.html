@@ -209,6 +209,7 @@ ul.description {
   const filterLocation = document.getElementById("filterLocation").value;
   const minPrice = parseInt(document.getElementById("minPrice").value) || 0;
   const maxPrice = parseInt(document.getElementById("maxPrice").value) || Infinity;
+   const filterPurpose = document.getElementById("filterPurpose").value.toLowerCase().trim();
 
   db.ref("listings").once("value", snapshot => {
     const data = snapshot.val();
@@ -231,7 +232,7 @@ const itemLocation = (item.location || "").toLowerCase().trim();
 const itemPurpose = (item.purpose || "").toLowerCase().trim(); // ✅ only once
 
 const filterTypeVal = filterType.toLowerCase().trim();
-const filterPurpose = document.getElementById("filterPurpose").value.toLowerCase().trim();
+
 const filterLoc = filterLocation.toLowerCase().trim();
 
 const itemLocationWords = itemLocation.split(/[\s,-]+/);
