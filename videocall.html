@@ -63,15 +63,17 @@
       audioTrack: null
     };
 
-  async function startMeeting() {
+async function startMeeting() {
   const channel = document.getElementById("channelName").value.trim();
   if (!channel) return alert("Enter a channel name");
 
-  client = window.AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
+  const rtc = window.AgoraRTC;
+
+  client = rtc.createClient({ mode: "rtc", codec: "vp8" });
 
   await client.join(APP_ID, channel, null, null);
 
-  const tracks = await window.AgoraRTC.createMicrophoneAndCameraTracks();
+  const tracks = await rtc.createMicrophoneAndCameraTracks();
   localTracks.audioTrack = tracks[0];
   localTracks.videoTrack = tracks[1];
 
@@ -87,6 +89,7 @@
 
   alert("Meeting started!");
 }
+
 
   </script>
 </body>
