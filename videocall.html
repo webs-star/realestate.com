@@ -20,21 +20,18 @@
     <h3>📹 Agora Meeting</h3>
     <input id="channelName" placeholder="Channel name"><br><br>
 
-    <!-- Buttons -->
     <button onclick="startMeeting()">Start Meeting</button>
     <button onclick="joinMeeting()">Join Meeting</button>
 
-    <!-- Local Stream -->
     <h4>📷 Your Camera</h4>
     <div id="local-stream" style="width: 640px; height: 480px; margin-bottom: 20px;"></div>
 
-    <!-- Remote Streams -->
     <h4>👥 Participants</h4>
     <div id="remote-streams" style="display: flex; flex-wrap: wrap; gap: 10px;"></div>
   </div>
 
   <script>
-    // 🔐 Firebase Config
+    // Firebase Config
     const firebaseConfig = {
       apiKey: "AIzaSyAYztz7z8L3SFOZgCpbwthzTXeuhojDisM",
       authDomain: "lead-tracker-a2181.firebaseapp.com",
@@ -68,7 +65,7 @@
         .catch(err => alert("❌ " + err.message));
     }
 
-    // Agora setup
+    // Agora Setup
     const APP_ID = "a28029207e4d45aaa3de6623a57171d1";
     let client;
     const localTracks = {
@@ -77,90 +74,71 @@
     };
 
     async function startMeeting() {
-      try {
-        const channel = document.getElementById("channelName").value.trim();
-        if (!channel) return alert("Please enter a channel name");
-
-        client = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
-        await client.join(APP_ID, channel, null);
-
-        setupClientListeners();
-
-        const [microphoneTrack, cameraTrack] = await AgoraRTC.createMicrophoneAndCameraTracks();
-        localTracks.audioTrack = microphoneTrack;
-        localTracks.videoTrack = cameraTrack;
-
-        const container = document.getElementById("local-stream");
-        container.innerHTML = "";
-
-        const player = document.createElement("div");
-        player.id = "local-player";
-        player.style.width = "640px";
-        player.style.height = "480px";
-        container.appendChild(player);
-
-        localTracks.videoTrack.play("local-player");
-        await client.publish([localTracks.audioTrack, localTracks.videoTrack]);
-
-        alert("✅ Meeting started!");
-      } catch (error) {
-        console.error("❌ Failed to start meeting:", error);
-        alert("Failed to start meeting: " + error.message);
-      }
+      await startOrJoinMeeting(true);
     }
 
     async function joinMeeting() {
+      await startOrJoinMeeting(false);
+    }
+
+    async function startOrJoinMeeting(isStart) {
       try {
         const channel = document.getElementById("channelName").value.trim();
         if (!channel) return alert("Please enter a channel name");
 
         client = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
+        setupClientListeners();
         await client.join(APP_ID, channel, null);
 
-        setupClientListeners();
-
-        const [microphoneTrack, cameraTrack] = await AgoraRTC.createMicrophoneAndCameraTracks();
-        localTracks.audioTrack = microphoneTrack;
-        localTracks.videoTrack = cameraTrack;
+        const [micTrack, camTrack] = await AgoraRTC.createMicrophoneAndCameraTracks();
+        localTracks.audioTrack = micTrack;
+        localTracks.videoTrack = camTrack;
 
         const container = document.getElementById("local-stream");
         container.innerHTML = "";
-
         const player = document.createElement("div");
         player.id = "local-player";
         player.style.width = "640px";
         player.style.height = "480px";
         container.appendChild(player);
 
-        localTracks.videoTrack.play("local-player");
-        await client.publish([localTracks.audioTrack, localTracks.videoTrack]);
+        camTrack.play("local-player");
 
-        alert("✅ Joined meeting and published!");
+        await client.publish([micTrack, camTrack]);
+        console.log("🎤 Mic volume level:", micTrack.getVolumeLevel());
+
+        alert(`✅ ${isStart ? "Meeting started" : "Joined meeting"}!`);
       } catch (error) {
-        console.error("❌ Error joining meeting:", error);
-        alert("Error joining meeting: " + error.message);
+        console.error("❌ Failed:", error);
+        alert("Error: " + error.message);
       }
     }
 
     function setupClientListeners() {
       client.on("user-published", async (user, mediaType) => {
         await client.subscribe(user, mediaType);
-        console.log("🔗 Subscribed to user:", user.uid);
+        console.log("👤 Subscribed to user:", user.uid);
+
+        const remoteId = `remote-player-${user.uid}`;
+        if (!document.getElementById(remoteId)) {
+          const remoteDiv = document.createElement("div");
+          remoteDiv.id = remoteId;
+          remoteDiv.style.width = "320px";
+          remoteDiv.style.height = "240px";
+          document.getElementById("remote-streams").appendChild(remoteDiv);
+        }
 
         if (mediaType === "video") {
-          const remoteId = `remote-player-${user.uid}`;
-          if (!document.getElementById(remoteId)) {
-            const remoteDiv = document.createElement("div");
-            remoteDiv.id = remoteId;
-            remoteDiv.style.width = "320px";
-            remoteDiv.style.height = "240px";
-            document.getElementById("remote-streams").appendChild(remoteDiv);
-          }
-          user.videoTrack.play(`remote-player-${user.uid}`);
+          user.videoTrack.play(remoteId);
         }
 
         if (mediaType === "audio") {
-          user.audioTrack.play();
+          try {
+            user.audioTrack.play();
+            console.log("🔊 Playing audio from user:", user.uid);
+          } catch (err) {
+            console.warn("⚠️ Failed to play remote audio:", err);
+          }
         }
       });
 
@@ -169,6 +147,14 @@
         if (remoteDiv) remoteDiv.remove();
       });
     }
+
+    // Stop mic and camera on window unload
+    window.addEventListener("beforeunload", async () => {
+      if (localTracks.audioTrack) localTracks.audioTrack.stop();
+      if (localTracks.videoTrack) localTracks.videoTrack.stop();
+      if (client) await client.leave();
+    });
   </script>
 </body>
 </html>
+
