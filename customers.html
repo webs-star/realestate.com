@@ -119,7 +119,16 @@ ul.description {
 }
 
  
-   
+    .bold-info {
+    font-weight: bold;
+    font-size: 1.2em;
+  }
+
+  .type    { color: #007BFF; }  /* Blue */
+  .purpose { color: #28A745; }  /* Green */
+  .location { color: #6F42C1; } /* Purple */
+  .price   { color: #DC3545; }  /* Red */
+  .contact { color: #FFC107; } /* Yellow/Orange */
   </style>
 </head>
 <body>
@@ -148,7 +157,18 @@ ul.description {
       <option value="industrial">Industrial Property</option>
       <option value="resort">Resort / Hotel</option>
     </select>
-     <select id="filterLocation">
+    
+    <select id="filterPurpose">
+  <option value="">All Purposes</option>
+  <option value="For Sale">For Sale</option>
+  <option value="For Rent">For Rent</option>
+  <option value="For Lease">For Lease</option>
+  <option value="For BnB">For BnB</option>
+</select>
+
+    
+    
+    <select id="filterLocation">
       <option value="">All Counties</option>
       <option value="Mombasa">Mombasa</option><option value="Kwale">Kwale</option><option value="Kilifi">Kilifi</option><option value="Tana River">Tana River</option><option value="Lamu">Lamu</option><option value="Taita-Taveta">Taita-Taveta</option><option value="Garissa">Garissa</option><option value="Wajir">Wajir</option><option value="Mandera">Mandera</option><option value="Marsabit">Marsabit</option><option value="Isiolo">Isiolo</option><option value="Meru">Meru</option><option value="Tharaka-Nithi">Tharaka-Nithi</option><option value="Embu">Embu</option><option value="Kitui">Kitui</option><option value="Machakos">Machakos</option><option value="Makueni">Makueni</option><option value="Nyandarua">Nyandarua</option><option value="Nyeri">Nyeri</option><option value="Kirinyaga">Kirinyaga</option><option value="Murang'a">Murang'a</option><option value="Kiambu">Kiambu</option><option value="Turkana">Turkana</option><option value="West Pokot">West Pokot</option><option value="Samburu">Samburu</option><option value="Trans Nzoia">Trans Nzoia</option><option value="Uasin Gishu">Uasin Gishu</option><option value="Elgeyo-Marakwet">Elgeyo-Marakwet</option><option value="Nandi">Nandi</option><option value="Baringo">Baringo</option><option value="Laikipia">Laikipia</option><option value="Nakuru">Nakuru</option><option value="Narok">Narok</option><option value="Kajiado">Kajiado</option><option value="Kericho">Kericho</option><option value="Bomet">Bomet</option><option value="Kakamega">Kakamega</option><option value="Vihiga">Vihiga</option><option value="Bungoma">Bungoma</option><option value="Busia">Busia</option><option value="Siaya">Siaya</option><option value="Kisumu">Kisumu</option><option value="Homa Bay">Homa Bay</option><option value="Migori">Migori</option><option value="Kisii">Kisii</option><option value="Nyamira">Nyamira</option><option value="Nairobi">Nairobi</option>
     </select>
@@ -209,6 +229,7 @@ ul.description {
   const itemType = (item.type || "").toLowerCase().trim();
   const itemLocation = (item.location || "").toLowerCase().trim();
   const filterTypeVal = filterType.toLowerCase().trim();
+   const filterPurpose = document.getElementById("filterPurpose").value.toLowerCase().trim();
   const filterLoc = filterLocation.toLowerCase().trim();
 
   // Match any word in location (e.g., "lamu mpeketoni" should match "lamu" or "mpeketoni")
@@ -220,29 +241,31 @@ ul.description {
   );
 
   const typeMatch = filterType === "" || itemType.includes(filterTypeVal);
+   const purposeMatch = filterPurpose === "" || itemPurpose === filterPurpose;
   const priceMatch = item.price >= minPrice && item.price <= maxPrice;
 
-  if (!locationMatch || !typeMatch || !priceMatch) continue;
+ if (!typeMatch || !purposeMatch || !locationMatch || !priceMatch) continue;
 
   // Continue with rendering the card...
 
 
 
+const card = document.createElement("div");
+card.className = "listing-card";
+card.innerHTML = `
+  <p><strong>Type:</strong> <span class="bold-info type">${item.type}</span></p>
+  <p><strong>Purpose:</strong> <span class="bold-info purpose">${item.purpose || "N/A"}</span></p>
+  <p><strong>Location:</strong> <span class="bold-info location">${item.location}</span></p>
+  <p><strong>Price:</strong> <span class="bold-info price">KES ${item.price}</span></p>
 
-      const card = document.createElement("div");
-card.className = "listing-card"; // <-- Add this line
-      card.innerHTML = `
-         <p><strong>Type:</strong> <span class="bold-info">${item.type}</span></p>
-  <p><strong>Location:</strong> ${item.location}</p>
-  <p><strong>Price:</strong> <span class="bold-info">KES ${item.price}</span></p>
- 
- <ul class="description">
-  ${(item.description || "").split("\n").map(line => `<li>${line}</li>`).join("")}
-</ul>
- 
- 
-  <p><strong>Contact:</strong> ${item.contact}</p>
-      `;
+  <ul class="description">
+    ${(item.description || "").split("\n").map(line => `<li>${line}</li>`).join("")}
+  </ul>
+
+  <p><strong>Contact:</strong> <span class="bold-info contact">${item.contact}</span></p>
+`;
+
+     
 
       const imageArray = Array.isArray(item.images) ? item.images : [];
       if (imageArray.length > 0) {
