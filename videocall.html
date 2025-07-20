@@ -113,6 +113,27 @@
   }
 }
 
+    // Handle remote users
+    client.on("user-published", async (user, mediaType) => {
+      await client.subscribe(user, mediaType);
+
+      if (mediaType === "video") {
+        const remoteDiv = document.createElement("div");
+        remoteDiv.id = `remote-player-${user.uid}`;
+        remoteDiv.style.width = "320px";
+        remoteDiv.style.height = "240px";
+        document.getElementById("remote-streams").appendChild(remoteDiv);
+        user.videoTrack.play(remoteDiv);
+      }
+
+      if (mediaType === "audio") {
+        user.audioTrack.play(); // 🔊 This plays their voice
+      }
+    });
+
+
+
+    
 
 async function joinMeeting() {
   const channel = document.getElementById("channelName").value.trim();
