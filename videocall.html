@@ -17,11 +17,22 @@
   <button onclick="login()">Login</button>
 
   <div id="meeting" style="display:none; margin-top: 20px;">
-    <h3>📹 Agora Meeting</h3>
-    <input id="channelName" placeholder="Channel name"><br>
-    <button onclick="startMeeting()">Start Meeting</button>
-    <div id="local-stream" style="width: 640px; height: 480px; margin-top: 20px;"></div>
-  </div>
+  <h3>📹 Agora Meeting</h3>
+  <input id="channelName" placeholder="Channel name"><br><br>
+
+  <!-- Buttons -->
+  <button onclick="startMeeting()">Start Meeting</button>
+  <button onclick="joinMeeting()">Join Meeting</button>
+
+  <!-- Local Stream -->
+  <h4>📷 Your Camera</h4>
+  <div id="local-stream" style="width: 640px; height: 480px; margin-bottom: 20px;"></div>
+
+  <!-- Remote Streams -->
+  <h4>👥 Participants</h4>
+  <div id="remote-streams" style="display: flex; flex-wrap: wrap; gap: 10px;"></div>
+</div>
+
 
   <script>
     // 🔐 Firebase Config
@@ -102,6 +113,42 @@
   }
 }
 
+
+async function joinMeeting() {
+  const channel = document.getElementById("channelName").value.trim();
+  if (!channel) return alert("Please enter a channel name");
+
+  try {
+    client = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
+    await client.join(APP_ID, channel, null, null);
+
+    client.on("user-published", async (user, mediaType) => {
+      await client.subscribe(user, mediaType);
+
+      if (mediaType === "video") {
+        const remoteDiv = document.createElement("div");
+        remoteDiv.id = `remote-player-${user.uid}`;
+        remoteDiv.style.width = "320px";
+        remoteDiv.style.height = "240px";
+        document.getElementById("remote-streams").appendChild(remoteDiv);
+
+        user.videoTrack.play(remoteDiv);
+      }
+
+      if (mediaType === "audio") {
+        user.audioTrack.play();
+      }
+    });
+
+    alert("✅ Joined the meeting!");
+  } catch (error) {
+    console.error("Error joining meeting:", error);
+    alert("❌ Error joining meeting: " + error.message);
+  }
+}
+
+
+    
   </script>
 </body>
 </html>
