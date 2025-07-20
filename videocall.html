@@ -67,41 +67,41 @@
       audioTrack: null
     };
 
-    async function startMeeting() {
-      try {
-        if (!window.AgoraRTC || !AgoraRTC.createClient) {
-          return alert("❌ AgoraRTC not loaded correctly.");
-        }
-
-        const channel = document.getElementById("channelName").value.trim();
-        if (!channel) return alert("Please enter a channel name");
-
-        client = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
-
-
-       await client.join(APP_ID, channel, null);
-
-
-        const [microphoneTrack, cameraTrack] = await AgoraRTC.createMicrophoneAndCameraTracks();
-        localTracks.audioTrack = microphoneTrack;
-        localTracks.videoTrack = cameraTrack;
-
-        const player = document.createElement("div");
-        player.id = "local-player";
-        player.style.width = "640px";
-        player.style.height = "480px";
-        document.getElementById("local-stream").appendChild(player);
-
-        localTracks.videoTrack.play("local-player");
-
-        await client.publish([localTracks.audioTrack, localTracks.videoTrack]);
-
-        alert("✅ Meeting started!");
-      } catch (err) {
-        console.error(err);
-        alert("❌ Error starting meeting: " + err.message);
-      }
+  async function startMeeting() {
+  try {
+    if (!window.AgoraRTC || !AgoraRTC.createClient) {
+      return alert("❌ AgoraRTC not loaded correctly.");
     }
+
+    const channel = document.getElementById("channelName").value.trim();
+    if (!channel) return alert("Please enter a channel name");
+
+    client = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
+
+    // ✅ Correct join (only 3 parameters: appId, channel, token)
+    await client.join(APP_ID, channel, null);
+
+    const [microphoneTrack, cameraTrack] = await AgoraRTC.createMicrophoneAndCameraTracks();
+    localTracks.audioTrack = microphoneTrack;
+    localTracks.videoTrack = cameraTrack;
+
+    const player = document.createElement("div");
+    player.id = "local-player";
+    player.style.width = "640px";
+    player.style.height = "480px";
+    document.getElementById("local-stream").appendChild(player);
+
+    localTracks.videoTrack.play("local-player");
+
+    await client.publish([localTracks.audioTrack, localTracks.videoTrack]);
+
+    alert("✅ Meeting started!");
+  } catch (err) {
+    console.error(err);
+    alert("❌ Error starting meeting: " + err.message);
+  }
+}
+
   </script>
 </body>
 </html>
