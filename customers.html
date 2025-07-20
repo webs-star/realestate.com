@@ -231,6 +231,7 @@ ul.description {
   const itemLocation = (item.location || "").toLowerCase().trim();
   const filterTypeVal = filterType.toLowerCase().trim();
    const itemPurpose = (item.purpose || "").toLowerCase().trim(); // ✅ Fix added
+   const filterPurposeVal = filterPurpose.toLowerCase().trim();   
   const filterLoc = filterLocation.toLowerCase().trim();
 
   // Match any word in location (e.g., "lamu mpeketoni" should match "lamu" or "mpeketoni")
@@ -243,7 +244,8 @@ ul.description {
 
   const typeMatch = filterType === "" || itemType.includes(filterTypeVal);
   
-const purposeMatch = filterPurpose === "" || itemPurpose === filterPurpose;
+const filterPurposeVal = filterPurpose.toLowerCase().trim(); // ✅ normalize
+const purposeMatch = filterPurpose === "" || itemPurpose === filterPurposeVal;
 
   const priceMatch = item.price >= minPrice && item.price <= maxPrice;
 
