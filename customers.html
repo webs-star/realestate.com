@@ -228,6 +228,8 @@ ul.description {
  for (const [id, item] of sortedEntries) {
   const itemType = (item.type || "").toLowerCase().trim();
   const itemLocation = (item.location || "").toLowerCase().trim();
+   const itemPurpose = (item.purpose || "").toLowerCase().trim();
+
   const filterTypeVal = filterType.toLowerCase().trim();
    const filterPurpose = document.getElementById("filterPurpose").value.toLowerCase().trim();
   const filterLoc = filterLocation.toLowerCase().trim();
@@ -241,7 +243,13 @@ ul.description {
   );
 
   const typeMatch = filterType === "" || itemType.includes(filterTypeVal);
-   const purposeMatch = filterPurpose === "" || itemPurpose === filterPurpose;
+
+
+
+const purposeMatch = filterPurpose === "" || itemPurpose === filterPurpose;
+
+
+   
   const priceMatch = item.price >= minPrice && item.price <= maxPrice;
 
  if (!typeMatch || !purposeMatch || !locationMatch || !priceMatch) continue;
