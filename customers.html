@@ -204,12 +204,16 @@ ul.description {
     () => alert("Location access denied.")
   );
 
- function loadListings() {
+function loadListings() {
   const filterType = document.getElementById("filterType").value;
-   const filterPurpose = document.getElementById("filterPurpose").value; // ✅ Added
+  const filterPurpose = document.getElementById("filterPurpose").value;
   const filterLocation = document.getElementById("filterLocation").value;
   const minPrice = parseInt(document.getElementById("minPrice").value) || 0;
   const maxPrice = parseInt(document.getElementById("maxPrice").value) || Infinity;
+
+  const filterTypeVal = filterType.toLowerCase().trim();
+  const filterPurposeVal = filterPurpose.toLowerCase().trim();
+  const filterLoc = filterLocation.toLowerCase().trim();
 
   db.ref("listings").once("value", snapshot => {
     const data = snapshot.val();
@@ -224,55 +228,44 @@ ul.description {
     const sortedEntries = Object.entries(data).sort((a, b) => {
       const tA = a[1].timestamp || 0;
       const tB = b[1].timestamp || 0;
-      return tB - tA; // newest first
+      return tB - tA;
     });
- for (const [id, item] of sortedEntries) {
-  const itemType = (item.type || "").toLowerCase().trim();
-  const itemLocation = (item.location || "").toLowerCase().trim();
-  const filterTypeVal = filterType.toLowerCase().trim();
-   const itemPurpose = (item.purpose || "").toLowerCase().trim(); // ✅ Fix added
-   const filterPurposeVal = filterPurpose.toLowerCase().trim();   
-  const filterLoc = filterLocation.toLowerCase().trim();
 
-  // Match any word in location (e.g., "lamu mpeketoni" should match "lamu" or "mpeketoni")
-  const itemLocationWords = itemLocation.split(/[\s,-]+/); // splits on space, comma, or dash
-  const filterWords = filterLoc.split(/[\s,-]+/);
+    for (const [id, item] of sortedEntries) {
+      const itemType = (item.type || "").toLowerCase().trim();
+      const itemPurpose = (item.purpose || "").toLowerCase().trim();
+      const itemLocation = (item.location || "").toLowerCase().trim();
 
-  const locationMatch = filterLoc === "" || filterWords.some(word =>
-    itemLocationWords.includes(word)
-  );
+      const itemLocationWords = itemLocation.split(/[\s,-]+/);
+      const filterWords = filterLoc.split(/[\s,-]+/);
 
-  const typeMatch = filterType === "" || itemType.includes(filterTypeVal);
-  
+      const locationMatch = filterLoc === "" || filterWords.some(word =>
+        itemLocationWords.includes(word)
+      );
+      const typeMatch = filterType === "" || itemType.includes(filterTypeVal);
+      const purposeMatch = filterPurpose === "" || itemPurpose === filterPurposeVal;
+      const priceMatch = item.price >= minPrice && item.price <= maxPrice;
 
-const purposeMatch = filterPurpose === "" || itemPurpose === filterPurposeVal;
+      if (!typeMatch || !purposeMatch || !locationMatch || !priceMatch) continue;
 
-  const priceMatch = item.price >= minPrice && item.price <= maxPrice;
+      const card = document.createElement("div");
+      card.className = "listing-card";
+      card.innerHTML = `
+        <p><strong>Type:</strong> <span class="bold-info type">${item.type}</span></p>
+        <p><strong>Purpose:</strong> <span class="bold-info purpose">${item.purpose || "N/A"}</span></p>
+        <p><strong>Location:</strong> <span class="bold-info location">${item.location}</span></p>
+        <p><strong>Price:</strong> <span class="bold-info price">KES ${item.price}</span></p>
+        <ul class="description">
+          ${(item.description || "").split("\n").map(line => `<li>${line}</li>`).join("")}
+        </ul>
+        <p><strong>Contact:</strong> <span class="bold-info contact">${item.contact}</span></p>
+      `;
 
- if (!typeMatch || !purposeMatch || !locationMatch || !priceMatch) continue;
-
-  // Continue with rendering the card...
-
-
-
-const card = document.createElement("div");
-card.className = "listing-card";
-card.innerHTML = `
-  <p><strong>Type:</strong> <span class="bold-info type">${item.type}</span></p>
-  <p><strong>Purpose:</strong> <span class="bold-info purpose">${item.purpose || "N/A"}</span></p>
-  <p><strong>Location:</strong> <span class="bold-info location">${item.location}</span></p>
-  <p><strong>Price:</strong> <span class="bold-info price">KES ${item.price}</span></p>
-
-  <ul class="description">
-    ${(item.description || "").split("\n").map(line => `<li>${line}</li>`).join("")}
-  </ul>
-
-  <p><strong>Contact:</strong> <span class="bold-info contact">${item.contact}</span></p>
-`;
- listingsDiv.appendChild(card);
+      listingsDiv.appendChild(card);
     }
   });
 }
+
      
 
       const imageArray = Array.isArray(item.images) ? item.images : [];
