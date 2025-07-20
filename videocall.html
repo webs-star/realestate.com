@@ -120,8 +120,20 @@ async function joinMeeting() {
 
   try {
     client = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
+
+    // Join channel
     await client.join(APP_ID, channel, null, null);
 
+    // Create local tracks (camera + mic)
+    const [localAudioTrack, localVideoTrack] = await AgoraRTC.createMicrophoneAndCameraTracks();
+
+    // Play your own video
+    localVideoTrack.play("local-stream");
+
+    // Publish your tracks so others can see you
+    await client.publish([localAudioTrack, localVideoTrack]);
+
+    // Handle remote users
     client.on("user-published", async (user, mediaType) => {
       await client.subscribe(user, mediaType);
 
@@ -131,7 +143,6 @@ async function joinMeeting() {
         remoteDiv.style.width = "320px";
         remoteDiv.style.height = "240px";
         document.getElementById("remote-streams").appendChild(remoteDiv);
-
         user.videoTrack.play(remoteDiv);
       }
 
@@ -140,7 +151,7 @@ async function joinMeeting() {
       }
     });
 
-    alert("✅ Joined the meeting!");
+    alert("✅ Joined and published your camera!");
   } catch (error) {
     console.error("Error joining meeting:", error);
     alert("❌ Error joining meeting: " + error.message);
