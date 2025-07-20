@@ -229,7 +229,7 @@ ul.description {
   const itemType = (item.type || "").toLowerCase().trim();
   const itemLocation = (item.location || "").toLowerCase().trim();
   const filterTypeVal = filterType.toLowerCase().trim();
-   const filterPurpose = document.getElementById("filterPurpose").value.toLowerCase().trim();
+   const itemPurpose = (item.purpose || "").toLowerCase().trim(); // ✅ Fix added
   const filterLoc = filterLocation.toLowerCase().trim();
 
   // Match any word in location (e.g., "lamu mpeketoni" should match "lamu" or "mpeketoni")
@@ -241,7 +241,9 @@ ul.description {
   );
 
   const typeMatch = filterType === "" || itemType.includes(filterTypeVal);
-   const purposeMatch = filterPurpose === "" || itemPurpose === filterPurpose;
+  
+const purposeMatch = filterPurpose === "" || itemPurpose === filterPurpose;
+
   const priceMatch = item.price >= minPrice && item.price <= maxPrice;
 
  if (!typeMatch || !purposeMatch || !locationMatch || !priceMatch) continue;
