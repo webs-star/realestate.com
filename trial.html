@@ -448,7 +448,7 @@ window.googleLogin = () => {
     <textarea id="description" placeholder="Description (optional)"></textarea>
 
     <input type="file" id="images" accept="image/*" multiple />
-    <div style="font-size: 0.9em; color: #777;">only 1 image, so choose the best</div>
+    <div style="font-size: 0.9em; color: #777;">only 4 image, so choose the best</div>
     <div id="previewContainer"></div>
 
     <div id="loading">⏳ Uploading...</div>
@@ -496,8 +496,8 @@ window.googleLogin = () => {
   imageInput.addEventListener("change", () => {
     const files = [...imageInput.files];
     previewContainer.innerHTML = "";
-    if (files.length > 1) {
-      alert("⚠️ You can upload up to 1 images.");
+    if (files.length > 4) {
+      alert("⚠️ You can upload up to 4 images.");
       imageInput.value = "";
       return;
     }
@@ -512,8 +512,8 @@ window.googleLogin = () => {
     e.preventDefault();
     if (!currentUserLatLng) return alert("⚠️ Location not available.");
 const files = [...imageInput.files];
-if (files.length > 1) {
-  alert("You can only upload up to 1 images.");
+if (files.length > 4) {
+  alert("You can only upload up to 4 images.");
   return;
 }
 
@@ -569,13 +569,26 @@ for (const [id, item] of sortedListings) {
   imageColumn.className = "image-column";
 
   if (item.images && item.images.length > 0) {
-    const img = document.createElement("img");
-    img.src = item.images[0];
-    img.style.height = "150px";
-    img.style.objectFit = "cover";
-    img.style.borderRadius = "8px";
-    imageColumn.appendChild(img);
-  }
+  const img = document.createElement("img");
+  img.src = item.images[0];
+  img.style.height = "150px";
+  img.style.width = "100%";
+  img.style.objectFit = "cover";
+  img.style.borderRadius = "8px";
+  img.style.transition = "opacity 0.5s ease-in-out";
+  imageColumn.appendChild(img);
+
+  let index = 0;
+  setInterval(() => {
+    index = (index + 1) % item.images.length;
+    img.style.opacity = 0;
+    setTimeout(() => {
+      img.src = item.images[index];
+      img.style.opacity = 1;
+    }, 500);
+  }, 5000); // 5 seconds
+}
+
 
   div.appendChild(imageColumn);
 
