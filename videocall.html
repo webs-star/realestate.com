@@ -3,7 +3,8 @@
 <head>
   <title>Agora Meeting</title>
   <!-- Agora SDK -->
-  <script src="https://cdn.jsdelivr.net/npm/agora-rtc-sdk-ng@4.11.0/index.global.min.js"></script>
+ <script src="https://download.agora.io/sdk/release/AgoraRTC_N-4.11.0.js"></script>
+
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
@@ -76,6 +77,7 @@
         if (!channel) return alert("Please enter a channel name");
 
         client = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
+
 
         await client.join(APP_ID, channel, null, null);
 
