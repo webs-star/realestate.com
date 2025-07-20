@@ -1,43 +1,27 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Agora Meeting Room</title>
+  <title>Agora Meeting</title>
+  <script src="https://download.agora.io/sdk/release/AgoraRTC_N.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-  <script src="https://download.agora.io/sdk/release/AgoraRTC_N.js"></script>
-  <style>
-    body { font-family: sans-serif; text-align: center; }
-    #video-area { display: flex; justify-content: center; margin-top: 20px; }
-    video, div#remote-player { width: 300px; height: 250px; border: 2px solid #000; margin: 5px; }
-    #login, #meeting-section { margin-top: 20px; }
-  </style>
 </head>
 <body>
+  <h2>🔐 Sign In / Sign Up</h2>
+  <input id="email" placeholder="Email"><br>
+  <input id="password" type="password" placeholder="Password"><br>
+  <button onclick="signUp()">Sign Up</button>
+  <button onclick="login()">Login</button>
 
-  <h1>🎥 Elimu Connect Meeting Room</h1>
-
-  <!-- 🔐 Login Section -->
-  <div id="login">
-    <input type="email" id="email" placeholder="Email" />
-    <input type="password" id="password" placeholder="Password" />
-    <button onclick="login()">Login</button>
-    <p id="login-status"></p>
-  </div>
-
-  <!-- 📺 Meeting UI -->
-  <div id="meeting-section" style="display:none;">
-    <input id="meetingName" placeholder="Enter meeting name" />
-    <button onclick="startMeeting()">Start / Join</button>
-
-    <div id="video-area">
-      <div id="local-player"></div>
-      <div id="remote-player"></div>
-    </div>
+  <div id="meeting" style="display:none; margin-top: 20px;">
+    <h3>📹 Agora Meeting</h3>
+    <input id="channelName" placeholder="Channel name"><br>
+    <button onclick="startMeeting()">Start Meeting</button>
+    <div id="local-stream" style="width: 640px; height: 480px; margin-top: 20px;"></div>
   </div>
 
   <script>
-    // --- Firebase Init ---
+    // 🔐 Firebase Config
     const firebaseConfig = {
       apiKey: "AIzaSyAYztz7z8L3SFOZgCpbwthzTXeuhojDisM",
       authDomain: "lead-tracker-a2181.firebaseapp.com",
@@ -49,67 +33,59 @@
     };
     firebase.initializeApp(firebaseConfig);
 
-    // --- Login Function ---
+    firebase.auth().onAuthStateChanged(user => {
+      if (user) {
+        document.getElementById("meeting").style.display = "block";
+      }
+    });
+
+    function signUp() {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      firebase.auth().createUserWithEmailAndPassword(email, password)
+        .then(() => alert("Signed up"))
+        .catch(err => alert(err.message));
+    }
+
     function login() {
       const email = document.getElementById("email").value;
       const password = document.getElementById("password").value;
       firebase.auth().signInWithEmailAndPassword(email, password)
-        .then(() => {
-          document.getElementById("login").style.display = "none";
-          document.getElementById("meeting-section").style.display = "block";
-        })
-        .catch((error) => {
-          document.getElementById("login-status").innerText = "Login failed: " + error.message;
-        });
+        .then(() => alert("Logged in"))
+        .catch(err => alert(err.message));
     }
 
-    // --- Agora Init ---
+    // 🧠 Agora Setup
     const APP_ID = "190f79bf2b5c416d9348410849b13076";
-    const client = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
-    let localStream;
+    let client;
+    let localTrack;
 
     async function startMeeting() {
-      const user = firebase.auth().currentUser;
-      const meeting = document.getElementById("meetingName").value.trim();
-      if (!meeting || !user) return alert("Enter meeting name and login first.");
+      const channel = document.getElementById("channelName").value.trim();
+      if (!channel) return alert("Enter a channel name");
 
-      await client.init(APP_ID);
-      const uid = user.uid;
+      // Create Agora client
+      client = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
 
-      await client.join(APP_ID, meeting, null, (uid) => {
-        localStream = AgoraRTC.createStream({ audio: true, video: true });
-        localStream.init(() => {
-          localStream.play("local-player");
-          client.publish(localStream);
-        });
+      // Join channel
+      const UID = await client.join(APP_ID, channel, null, null);
 
-        // Log participation
-        firebase.database().ref("meetings/" + meeting + "/participants").push({
-          name: user.email,
-          time: new Date().toLocaleString()
-        });
+      // Create local track
+      localTrack = await AgoraRTC.createMicrophoneAndCameraTracks();
 
-        client.on("stream-added", evt => {
-          client.subscribe(evt.stream);
-        });
+      // Play local video
+      const player = document.createElement("div");
+      player.id = UID;
+      player.style.width = "640px";
+      player.style.height = "480px";
+      document.getElementById("local-stream").appendChild(player);
+      localTrack[1].play(UID);
 
-        client.on("stream-subscribed", evt => {
-          evt.stream.play("remote-player");
-        });
-      });
+      // Publish tracks
+      await client.publish(localTrack);
+      alert("Meeting started!");
     }
   </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
 
