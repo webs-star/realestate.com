@@ -270,16 +270,26 @@ card.innerHTML = `
 `;
 
      
+const imageArray = Array.isArray(item.images) ? item.images : [];
+if (imageArray.length > 0) {
+  const img = document.createElement("img");
+  img.src = imageArray[0];
+  img.className = "property";
+  img.style.transition = "opacity 0.5s ease-in-out";
+  card.appendChild(img);
 
-      const imageArray = Array.isArray(item.images) ? item.images : [];
-      if (imageArray.length > 0) {
-        imageArray.forEach(url => {
-          const img = document.createElement("img");
-          img.src = url;
-          img.className = "property";
-          card.appendChild(img);
-        });
-      }
+  let index = 0;
+  setInterval(() => {
+    index = (index + 1) % imageArray.length;
+    img.style.opacity = 0;
+    setTimeout(() => {
+      img.src = imageArray[index];
+      img.style.opacity = 1;
+   }, 500);
+  }, 5000); // 5 seconds
+}
+
+
 
       const mapId = "map-" + id;
       const btn = document.createElement("button");
