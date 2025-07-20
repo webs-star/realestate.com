@@ -206,6 +206,7 @@ ul.description {
 
  function loadListings() {
   const filterType = document.getElementById("filterType").value;
+   const filterPurpose = document.getElementById("filterPurpose").value; // ✅ Added
   const filterLocation = document.getElementById("filterLocation").value;
   const minPrice = parseInt(document.getElementById("minPrice").value) || 0;
   const maxPrice = parseInt(document.getElementById("maxPrice").value) || Infinity;
