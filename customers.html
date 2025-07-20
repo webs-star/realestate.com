@@ -244,7 +244,7 @@ ul.description {
 
   const typeMatch = filterType === "" || itemType.includes(filterTypeVal);
   
-const filterPurposeVal = filterPurpose.toLowerCase().trim(); // ✅ normalize
+
 const purposeMatch = filterPurpose === "" || itemPurpose === filterPurposeVal;
 
   const priceMatch = item.price >= minPrice && item.price <= maxPrice;
@@ -269,7 +269,10 @@ card.innerHTML = `
 
   <p><strong>Contact:</strong> <span class="bold-info contact">${item.contact}</span></p>
 `;
-
+ listingsDiv.appendChild(card);
+    }
+  });
+}
      
 
       const imageArray = Array.isArray(item.images) ? item.images : [];
