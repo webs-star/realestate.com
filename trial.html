@@ -444,7 +444,16 @@ window.googleLogin = () => {
     <!-- Other Inputs -->
     <input type="text" id="location" placeholder="Location (County, Town)" required />
     <input type="number" id="price" placeholder="Price (KES)" required />
-    <input type="tel" id="contact" placeholder="Phone number" required />
+  <input
+  type="tel"
+  id="contact"
+  placeholder="+254712345678"
+  pattern="^\+254\d{9}$"
+  title="Enter a valid Kenyan phone number starting with +254 and followed by 9 digits"
+  required
+/>
+
+
     <textarea id="description" placeholder="Description (optional)"></textarea>
 
     <input type="file" id="images" accept="image/*" multiple />
@@ -520,6 +529,33 @@ if (files.length > 4) {
 loading.style.display = "block";
 const imageURLs = [];
 
+
+
+
+
+  // ✅ Contact validation
+  const rawContact = document.getElementById("contact").value.trim();
+  const validContactPattern = /^\+254\d{9}$/;
+
+  if (!validContactPattern.test(rawContact)) {
+    alert("❌ Enter a valid Kenyan number starting with +254 followed by 9 digits.");
+    loading.style.display = "none"; // Hide loader on error
+    return;
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+    
+
 if (files.length > 0) {
   for (const file of files) {
     const formData = new FormData();
@@ -536,7 +572,7 @@ if (files.length > 0) {
       purpose: document.getElementById("purpose").value,  // <- Add this line
       location: document.getElementById("location").value,
       price: parseInt(document.getElementById("price").value),
-      contact: document.getElementById("contact").value,
+      contact: rawContact,
       description: document.getElementById("description").value,
       images: imageURLs,
       lat: currentUserLatLng.lat,
@@ -614,7 +650,21 @@ for (const [id, item] of sortedListings) {
       const newType = prompt("Edit type:", item.type);
       const newPrice = prompt("Edit price:", item.price);
       const newLocation = prompt("Edit location:", item.location);
-      const newContact = prompt("Edit contact:", item.contact);
+     let newContact = prompt("Edit contact:", item.contact)?.trim();
+if (!newContact) return;
+
+// Auto-convert if starts with 0 (e.g., 0712...) ➝ +254712...
+if (/^0\d{9}$/.test(newContact)) {
+  newContact = "+254" + newContact.slice(1);
+}
+
+// Validate +254 followed by exactly 9 digits
+const validContactPattern = /^\+254\d{9}$/;
+if (!validContactPattern.test(newContact)) {
+  alert("❌ Invalid contact. Use format: +254712345678");
+  return;
+}
+
       const newDescription = prompt("Edit description:", item.description || "");
 const newPurpose = prompt("Edit purpose:", item.purpose || "");
 
