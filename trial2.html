@@ -256,8 +256,6 @@ if (!typeMatch || !purposeMatch || !locationMatch || !priceMatch) continue;
 
 const card = document.createElement("div");
 card.className = "listing-card";
-card.id = `listing-${id}`; // 👈 Add this
-
 card.innerHTML = `
   <p><strong>Type:</strong> <span class="bold-info type">${item.type}</span></p>
   <p><strong>Purpose:</strong> <span class="bold-info purpose">${item.purpose || "N/A"}</span></p>
@@ -293,25 +291,6 @@ if (imageArray.length > 0) {
 
 
 
-
-function scrollToListingFromURL() {
-  const params = new URLSearchParams(window.location.search);
-  const targetId = params.get("listing");
-  if (targetId) {
-    const targetCard = document.getElementById(`listing-${targetId}`);
-    if (targetCard) {
-      targetCard.scrollIntoView({ behavior: "smooth", block: "center" });
-      targetCard.style.border = "3px solid orange"; // Highlight
-      setTimeout(() => {
-        targetCard.style.border = ""; // Remove after 3s
-      }, 3000);
-    }
-  }
-}
-
-
-   
-
      const mapId = "map-" + id;
 
 // Show Directions button
@@ -335,12 +314,7 @@ mapDiv.id = mapId;
 card.appendChild(btn);
 card.appendChild(chatBtn); // ✅ new chat button
 card.appendChild(mapDiv);
-// ...inside db.ref().once(...)
-
-  listingsDiv.appendChild(card);
-}
-
-scrollToListingFromURL(); // 👈 Call here
+listingsDiv.appendChild(card);
 
     }
   });
