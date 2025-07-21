@@ -309,36 +309,52 @@ if (imageArray.length > 0) {
 
 
   function showMapForListing(destLat, destLng, containerId) {
-    const container = document.getElementById(containerId);
-    container.innerHTML = "";
+  const container = document.getElementById(containerId);
+  container.innerHTML = "";
 
-    const mapDiv = document.createElement("div");
-    mapDiv.style.height = "300px";
-    mapDiv.style.marginTop = "10px";
-    mapDiv.style.borderRadius = "10px";
-    container.appendChild(mapDiv);
+  const mapDiv = document.createElement("div");
+  mapDiv.style.height = "300px";
+  mapDiv.style.marginTop = "10px";
+  mapDiv.style.borderRadius = "10px";
+  container.appendChild(mapDiv);
 
-    const directionsList = document.createElement("div");
-    directionsList.className = "directions-text";
-    directionsList.style.marginTop = "10px";
-    directionsList.style.padding = "10px";
-    directionsList.style.background = "#f9f9f9";
-    directionsList.style.borderRadius = "8px";
-    directionsList.innerHTML = "<strong>Directions:</strong><br><em>Loading...</em>";
-    container.appendChild(directionsList);
+  const directionsList = document.createElement("div");
+  directionsList.className = "directions-text";
+  directionsList.style.marginTop = "10px";
+  directionsList.style.padding = "10px";
+  directionsList.style.background = "#f9f9f9";
+  directionsList.style.borderRadius = "8px";
+  directionsList.innerHTML = "<strong>Directions:</strong><br><em>Loading...</em>";
+  container.appendChild(directionsList);
 
-    const map = L.map(mapDiv).setView([destLat, destLng], 13);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+  const map = L.map(mapDiv).setView([destLat, destLng], 13);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-    if (!currentUserLatLng) {
-      alert("Please allow location access to show directions.");
-      return;
+  const destinationLatLng = L.latLng(destLat, destLng);
+  L.marker(destinationLatLng).addTo(map).bindPopup("Listing Location");
+
+  let userMarker = null;
+  let routeControl = null;
+
+  function updateRoute(userLatLng) {
+    if (userMarker) {
+      userMarker.setLatLng(userLatLng);
+    } else {
+      userMarker = L.marker(userLatLng, {
+        icon: L.icon({
+          iconUrl: "https://cdn-icons-png.flaticon.com/512/684/684908.png",
+          iconSize: [25, 25],
+          iconAnchor: [12, 12]
+        })
+      }).addTo(map).bindPopup("You are here");
     }
 
-    L.marker([destLat, destLng]).addTo(map).bindPopup("Listing Location").openPopup();
+    if (routeControl) {
+      map.removeControl(routeControl);
+    }
 
-    const control = L.Routing.control({
-      waypoints: [currentUserLatLng, L.latLng(destLat, destLng)],
+    routeControl = L.Routing.control({
+      waypoints: [userLatLng, destinationLatLng],
       routeWhileDragging: false,
       addWaypoints: false,
       createMarker: () => null,
@@ -348,26 +364,53 @@ if (imageArray.length > 0) {
       }
     }).addTo(map);
 
-    control.on('routesfound', function (e) {
-      const routes = e.routes[0];
-      let steps = "<strong>Directions:</strong><br>";
-      routes.instructions = routes.instructions || [];
+    routeControl.on('routesfound', function (e) {
+      const route = e.routes[0];
+      const distanceKm = (route.summary.totalDistance / 1000).toFixed(2);
+      const timeMin = (route.summary.totalTime / 60).toFixed(0);
 
-      routes.instructions = routes.instructions.length > 0
-        ? routes.instructions
-        : L.Routing.Formatter.prototype._getInstructions.call({options: {}}, routes);
+      let steps = `<strong>Live Step-by-Step Directions:</strong><br>`;
+      const instructions = route.instructions || [];
 
-      for (const instr of routes.instructions) {
-        if (instr.text) steps += `→ ${instr.text}<br>`;
+      // Leaflet sometimes leaves instructions empty, fix it manually
+      const formatter = new L.Routing.Formatter();
+      if (instructions.length === 0 && route.instructions === undefined) {
+        const legs = route.instructions = formatter._getInstructions.call({options:{}}, route);
       }
 
-      steps += `<br><em>Distance:</em> ${(routes.summary.totalDistance / 1000).toFixed(2)} km<br>`;
-      steps += `<em>Estimated Time:</em> ${(routes.summary.totalTime / 60).toFixed(0)} mins`;
+      for (const step of instructions) {
+        if (step.text) {
+          steps += `➡️ ${step.text} (${(step.distance / 1000).toFixed(2)} km)<br>`;
+        }
+      }
+
+      steps += `<br><em>Total Distance:</em> ${distanceKm} km<br>`;
+      steps += `<em>Estimated Time:</em> ${timeMin} mins`;
+
       directionsList.innerHTML = steps;
     });
   }
 
-  window.onload = loadListings;
+  // Watch live location and update route
+  navigator.geolocation.watchPosition(
+    pos => {
+      const userLatLng = L.latLng(pos.coords.latitude, pos.coords.longitude);
+      updateRoute(userLatLng);
+    },
+    err => {
+      alert("Location tracking failed: " + err.message);
+    },
+    {
+      enableHighAccuracy: true,
+      maximumAge: 3000,
+      timeout: 7000
+    }
+  );
+}
+window.onload = () => {
+  loadListings();
+};
+
 </script>
 
 </body>
