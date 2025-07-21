@@ -291,17 +291,32 @@ if (imageArray.length > 0) {
 
 
 
-      const mapId = "map-" + id;
-      const btn = document.createElement("button");
-      btn.textContent = "📍 Show Directions";
-      btn.onclick = () => showMapForListing(item.lat, item.lng, mapId);
+     const mapId = "map-" + id;
 
-      const mapDiv = document.createElement("div");
-      mapDiv.id = mapId;
+// Show Directions button
+const btn = document.createElement("button");
+btn.textContent = "📍 Show Directions";
+btn.onclick = () => showMapForListing(item.lat, item.lng, mapId);
 
-      card.appendChild(btn);
-      card.appendChild(mapDiv);
-      listingsDiv.appendChild(card);
+// Chat button
+const chatBtn = document.createElement("button");
+chatBtn.textContent = "💬 Chat with Landlord";
+chatBtn.style.background = "#ff9800";
+chatBtn.style.color = "white";
+chatBtn.style.marginTop = "5px";
+chatBtn.style.borderRadius = "5px";
+chatBtn.onclick = () => openChat(item.contact, item.location, item.type);
+
+// Map container
+const mapDiv = document.createElement("div");
+mapDiv.id = mapId;
+
+// Append to card
+card.appendChild(btn);
+card.appendChild(chatBtn); // ✅ new chat button
+card.appendChild(mapDiv);
+listingsDiv.appendChild(card);
+
     }
   });
 }
@@ -411,6 +426,20 @@ window.onload = () => {
   loadListings();
 };
 
+
+function openChat(contact, location, type) {
+  const message = prompt(`💬 Start chatting with the landlord of this ${type} in ${location}.\nType your message:`);
+
+  if (!message) return;
+
+  const phoneNumber = contact.replace(/\D/g, ''); // keep only numbers
+  const whatsappURL = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+
+  window.open(whatsappURL, "_blank");
+}
+
+
+  
 </script>
 
 </body>
