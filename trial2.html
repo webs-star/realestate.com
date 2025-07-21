@@ -305,8 +305,7 @@ chatBtn.style.background = "#ff9800";
 chatBtn.style.color = "white";
 chatBtn.style.marginTop = "5px";
 chatBtn.style.borderRadius = "5px";
-chatBtn.onclick = () => openChat(item.contact, item.location, item.type);
-
+chatBtn.onclick = () => openChat(item.contact, item.location, item.type, id);
 // Map container
 const mapDiv = document.createElement("div");
 mapDiv.id = mapId;
@@ -427,16 +426,21 @@ window.onload = () => {
 };
 
 
-function openChat(contact, location, type) {
-  const message = prompt(`💬 Start chatting with the landlord of this ${type} in ${location}.\nType your message:`);
+function openChat(contact, location, type, listingId) {
+  const message = prompt(`💬 Start chatting with the landlord of this ${type} in ${location}.\n\nType your message below:`);
 
   if (!message) return;
 
-  const phoneNumber = contact.replace(/\D/g, ''); // keep only numbers
-  const whatsappURL = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+  const phoneNumber = contact.replace(/\D/g, '');
+
+  const linkToListing = `https://webs-star.github.io/realestate.com/customers.html?listing=${listingId}`;
+
+  const preFilled = `Hello, I'm interested in the ${type} located in ${location}. I saw your listing on *RealPlot Connect*.\n\n${message}\n\n🔗 View listing: ${linkToListing}`;
+  const whatsappURL = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(preFilled)}`;
 
   window.open(whatsappURL, "_blank");
 }
+
 
 
   
