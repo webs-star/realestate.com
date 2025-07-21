@@ -1,102 +1,52 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <!-- Character Set and Viewport -->
+  <title>Real Estate Marketplace</title>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-  <!-- Google Site Verification (keep if needed) -->
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="google-site-verification" content="ZuK2pvozDS96vm0_IRjSYEsTqSdC8FJCIgJdAitGf0U" />
-
-  <!-- Title and SEO -->
-  <title>RealPlot Connect for Landlords – List Plots and Rentals in Kenya</title>
-  <meta name="description" content="RealPlot Connect helps landlords and landowners in Kenya list plots, land, and rental properties on a live interactive map. Buyers can search and get voice-guided directions." />
-  <meta name="keywords" content="landlord listing Kenya, list rental Kenya, plot for sale Kenya, real estate Kenya, landowner portal, property map Kenya, realplot connect" />
+  <meta name="description" content="Use the RealPlot customer map to discover land and rental properties in Kenya. Apply filters and get voice-guided directions instantly." />
+  <meta name="keywords" content="real estate Kenya, land map Kenya, property listings, rentals, voice directions, RealPlot Connect, property map" />
   <meta name="author" content="RealPlot Connect by Webs Star" />
   <meta name="robots" content="index, follow" />
-
-  <!-- Open Graph / Social Preview -->
-  <meta property="og:title" content="RealPlot Connect – Landowner Listing Portal" />
-  <meta property="og:description" content="Landowners and landlords in Kenya can now list their properties live on RealPlot Connect. Viewers get real-time map access and voice directions." />
-  <meta property="og:url" content="https://webs-star.github.io/realestate.com/landlords" />
+  <meta property="og:title" content="RealPlot Connect – Customer Property Finder" />
+  <meta property="og:description" content="Discover land, rentals, and houses near you using RealPlot’s live map. Voice-guided directions and filtering included." />
+  <meta property="og:url" content="https://webs-star.github.io/realestate.com/customers.html" />
   <meta property="og:type" content="website" />
-  <meta property="og:image" content="https://your-site-preview-image-link.jpg" /> <!-- Replace with actual image -->
+  <meta property="og:image" content="https://your-site-preview-image.jpg" />
+  <link rel="icon" href="favicon.ico" />
 
-  <!-- Firebase (for listings and auth) -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-
-
-  <!-- Cloudinary (media upload) + Axios -->
-  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-
-  <!-- Leaflet Maps + Routing -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css" />
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.min.js"></script>
 
-  <!-- Favicon -->
-  <link rel="icon" href="/favicon.ico" />
-
-
 
   <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #f4f6f9;
-      margin: 0;
-      padding: 20px;
-    }
+    body { font-family: Arial; background: #f4f4f4; padding: 20px; }
     h2 {
-      color: #2c3e50;
       text-align: center;
-      margin-bottom: 15px;
-    }
-    form {
-      background: #fff;
-      padding: 20px;
-      border-radius: 10px;
-      max-width: 700px;
-      margin: auto;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    }
-    form input, form select, form textarea, form button {
-      width: 100%;
-      padding: 10px;
-      margin-top: 10px;
-      font-size: 14px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-    }
-    form button {
-      background-color: #007bff;
+      background: #0056b3;
       color: white;
-      border: none;
-      font-weight: bold;
-      cursor: pointer;
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
     }
-    form button:hover {
-      background-color: #0056b3;
+    .card, .filters {
+      background: white; padding: 20px; border-radius: 8px;
+      box-shadow: 0 2px 6px #ccc; max-width: 800px; margin: 20px auto;
     }
-    #previewContainer img {
-      width: 100px;
-      height: 100px;
-      object-fit: cover;
-      border-radius: 6px;
-      margin: 5px;
-      border: 1px solid #ccc;
+    input, select, button {
+      width: 100%; margin-top: 10px; padding: 10px;
     }
-    #loading {
-      text-align: center;
-      font-weight: bold;
-      color: #ff6600;
-      margin-top: 10px;
-      display: none;
+    img.property {
+      width: 100%; margin-bottom: 10px; border-radius: 10px;
     }
-  
-#listings {
+   
+   
+  #listings {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
@@ -168,248 +118,26 @@ ul.description {
   color: white;
 }
 
-
-
-
-
-
-
-
-
-
-    
-#realplot-note {
-  background-color: #f0f8ff;
-  border-left: 6px solid #007acc;
-  padding: 20px 25px;
-  margin: 30px auto;
-  max-width: 800px;
-  font-family: 'Segoe UI', sans-serif;
-  font-size: 16px;
-  border-radius: 10px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-#realplot-note h2 {
-  font-size: 22px;
-  color: #005999;
-  margin-bottom: 15px;
-}
-#realplot-note ul {
-  padding-left: 20px;
-}
-#realplot-note li {
-  margin-bottom: 10px;
-  line-height: 1.5em;
-}
-
-
- #authSection {
-    position: absolute;
-    top: 20px;
-    left: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    background-color: #f9f9f9;
-    padding: 25px;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    max-width: 300px;
-    font-family: Arial, sans-serif;
+ 
+    .bold-info {
+    font-weight: bold;
+    font-size: 1.2em;
   }
 
-  #authSection input {
-    padding: 12px;
-    font-size: 18px;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-  }
-
-  #authSection button {
-    padding: 12px;
-    font-size: 18px;
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-  }
-
-  #authSection button:hover {
-    background-color: #45a049;
-  }
-
-    
-    
-    }
-
-
-
-
-
-
-    
+  .type    { color: #007BFF; }  /* Blue */
+  .purpose { color: #28A745; }  /* Green */
+  .location { color: #6F42C1; } /* Purple */
+  .price   { color: #DC3545; }  /* Red */
+  .contact { color: #FFC107; } /* Yellow/Orange */
   </style>
 </head>
-
 <body>
 
-<script>
-
-const firebaseConfig = {
-  apiKey: "AIzaSyDLTAd2u0IlhA4Gm4-0tTSzLUDHFYj045g",
-  authDomain: "realestate-afbe6.firebaseapp.com",
-  databaseURL: "https://realestate-afbe6-default-rtdb.firebaseio.com",
-  projectId: "realestate-afbe6",
-  storageBucket: "realestate-afbe6.appspot.com",
-  messagingSenderId: "202970291965",
-  appId: "1:202970291965:web:baaf253d6c9a8685c5e894"
-};
-firebase.initializeApp(firebaseConfig);
-
-
-
-
-const db = firebase.database();
-
-
-
-
-firebase.auth().onAuthStateChanged(user => {
-  if (user) {
-    // Show upload section
-    document.getElementById("uploadSection").style.display = "block";
-    document.getElementById("authSection").style.display = "none";
-    userId = user.uid;
-
-    // Optional: Scroll to upload section
-    document.getElementById("uploadSection").scrollIntoView({ behavior: "smooth" });
-
-  } else {
-    // Show login section
-    document.getElementById("uploadSection").style.display = "none";
-    document.getElementById("authSection").style.display = "block";
-    userId = null;
-  }
-});
-
-  
-
-  
-
-
-  // 🔒 Make functions global
-  
-window.googleLogin = () => {
-  const provider = new firebase.auth.GoogleAuthProvider();
-  firebase.auth().signInWithPopup(provider)
-    .then(result => {
-      alert("Logged in as " + result.user.email);
-      // Show the upload section without waiting for onAuthStateChanged
-      
-    })
-    .catch(err => {
-      alert("Login failed: " + err.message);
-    });
-};
-
- 
-
-  window.login = () => {
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
-  firebase.auth().signInWithEmailAndPassword(email, password)
-    .then(userCredential => {
-      alert("Logged in as: " + userCredential.user.email);
-      // Show the upload section manually without reloading
-      
-    })
-    .catch(error => {
-      alert("Login error: " + error.message);
-    });
-};
-
-  
-
-  window.register = () => {
-    const email = document.getElementById("email").value;
-    const password = document.getElementById("password").value;
-    firebase.auth().createUserWithEmailAndPassword(email, password)
-      .then(userCredential => {
-        alert("User registered: " + userCredential.user.email);
-      })
-      .catch(error => {
-        alert("Error: " + error.message);
-      });
-  };
-
-  window.logout = () => {
-    firebase.auth().signOut().then(() => {
-      alert("Logged out");
-    });
-  };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  
-</script>
-
-
-
-
-
-<div id="authSection">
-  <input type="email" id="email" placeholder="Email" />
-  <input type="password" id="password" placeholder="Password" />
-  <button onclick="login()">Login</button>
-  <button onclick="register()">Register</button>
-  <button onclick="logout()">Logout</button>
-  <button onclick="googleLogin()">Login with Google</button>
-</div>
-
-
-
-
-
-
-<div id="realplot-note">
-  <h2>📌 RealPlot Connect Listing Guidelines</h2>
-  <ul>
-    <li>📍 List property only when physically at the location for accurate GPS capture.</li>
-    <li>🗑️ Remove listings after sale/lease to avoid confusion.</li>
-    <li>🧭 Confirm your listing is correctly shown on the map and edit if needed.</li>
-    <li>📌 Location format: County SubCounty Town (no commas or dashes).</li>
-    <li>💰 Enter full price: e.g., <code>3000000</code> not <code>3M</code>.</li>
-    <li>✍️ Use bullet-style description points instead of one long paragraph.</li>
-    <li>🖼️ Upload only one best image; describe the rest in the description.</li>
-  </ul>
-</div>
-
-
-
-
-<h2>📤 Upload Property Listing</h2>
-
-<div id="uploadSection" style="display: none;">
-  <form id="uploadForm">
-  
-
-    <!-- Property Type Dropdown -->
-    <select id="type" required>
-      <option value="">Select Property Type</option>
+<div class="filters">
+  <h3>🔍 Filter Listings</h3>
+  <div style="display:flex; flex-wrap:wrap; gap:10px; justify-content:center;">
+    <select id="filterType">
+      <option value="">All Types</option>
       <option value="land">Land / Plots</option>
       <option value="house">House</option>
       <option value="apartment">Apartment / Flat</option>
@@ -429,231 +157,294 @@ window.googleLogin = () => {
       <option value="industrial">Industrial Property</option>
       <option value="resort">Resort / Hotel</option>
     </select>
-
-
-  <!-- Listing Purpose Dropdown -->
-    <select id="purpose" required>
-      <option value="">Select Listing Purpose</option>
-      <option value="sale">For Sale</option>
-      <option value="rent">For Rent</option>
-      <option value="lease">For Lease</option>
-      <option value="bnb">For BNB</option>
-    </select>
+    
+    
+<select id="filterPurpose">
+  <option value="">All Purposes</option>
+  <option value="sale">For Sale</option>
+  <option value="rent">For Rent</option>
+  <option value="lease">For Lease</option>
+  <option value="bnb">For BnB</option>
+</select>
 
     
-    <!-- Other Inputs -->
-    <input type="text" id="location" placeholder="Location (County, Town)" required />
-    <input type="number" id="price" placeholder="Price (KES)" required />
-    <input type="tel" id="contact" placeholder="Phone number" required />
-    <textarea id="description" placeholder="Description (optional)"></textarea>
-
-    <input type="file" id="images" accept="image/*" multiple />
-    <div style="font-size: 0.9em; color: #777;">only 4 image, so choose the best</div>
-    <div id="previewContainer"></div>
-
-    <div id="loading">⏳ Uploading...</div>
-    <button type="submit">Submit</button>
-  </form>
+    
+    <select id="filterLocation">
+      <option value="">All Counties</option>
+      <option value="Mombasa">Mombasa</option><option value="Kwale">Kwale</option><option value="Kilifi">Kilifi</option><option value="Tana River">Tana River</option><option value="Lamu">Lamu</option><option value="Taita-Taveta">Taita-Taveta</option><option value="Garissa">Garissa</option><option value="Wajir">Wajir</option><option value="Mandera">Mandera</option><option value="Marsabit">Marsabit</option><option value="Isiolo">Isiolo</option><option value="Meru">Meru</option><option value="Tharaka-Nithi">Tharaka-Nithi</option><option value="Embu">Embu</option><option value="Kitui">Kitui</option><option value="Machakos">Machakos</option><option value="Makueni">Makueni</option><option value="Nyandarua">Nyandarua</option><option value="Nyeri">Nyeri</option><option value="Kirinyaga">Kirinyaga</option><option value="Murang'a">Murang'a</option><option value="Kiambu">Kiambu</option><option value="Turkana">Turkana</option><option value="West Pokot">West Pokot</option><option value="Samburu">Samburu</option><option value="Trans Nzoia">Trans Nzoia</option><option value="Uasin Gishu">Uasin Gishu</option><option value="Elgeyo-Marakwet">Elgeyo-Marakwet</option><option value="Nandi">Nandi</option><option value="Baringo">Baringo</option><option value="Laikipia">Laikipia</option><option value="Nakuru">Nakuru</option><option value="Narok">Narok</option><option value="Kajiado">Kajiado</option><option value="Kericho">Kericho</option><option value="Bomet">Bomet</option><option value="Kakamega">Kakamega</option><option value="Vihiga">Vihiga</option><option value="Bungoma">Bungoma</option><option value="Busia">Busia</option><option value="Siaya">Siaya</option><option value="Kisumu">Kisumu</option><option value="Homa Bay">Homa Bay</option><option value="Migori">Migori</option><option value="Kisii">Kisii</option><option value="Nyamira">Nyamira</option><option value="Nairobi">Nairobi</option>
+    </select>
+    <input type="number" id="minPrice" placeholder="Min KES" />
+    <input type="number" id="maxPrice" placeholder="Max KES" />
+    <button onclick="loadListings()">Apply Filters</button>
+  </div>
 </div>
 
-
-
-  
-
-
-<h2>🏘️ All Listings</h2>
+<h2>🏠 RealPlot Connect – View Properties</h2>
 <div id="listings"></div>
 
-
-
-
-
-
-
 <script>
-  
+  const firebaseConfig = {
+    apiKey: "AIzaSyDLTAd2u0IlhA4Gm4-0tTSzLUDHFYj045g",
+    authDomain: "realestate-afbe6.firebaseapp.com",
+    databaseURL: "https://realestate-afbe6-default-rtdb.firebaseio.com",
+    projectId: "realestate-afbe6",
+    storageBucket: "realestate-afbe6.appspot.com",
+    messagingSenderId: "202970291965",
+    appId: "1:202970291965:web:baaf253d6c9a8685c5e894"
+  };
 
-  const cloudName = "dwvt4e9o2";
-  const uploadPreset = "unsigned_upload";
-
-  const form = document.getElementById("uploadForm");
-  const imageInput = document.getElementById("images");
-  const previewContainer = document.getElementById("previewContainer");
-  const listingsDiv = document.getElementById("listings");
-  const loading = document.getElementById("loading");
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
 
   let currentUserLatLng = null;
-  let userId = localStorage.getItem("realplot_user_id");
-  if (!userId) {
-    userId = "user_" + Date.now();
-    localStorage.setItem("realplot_user_id", userId);
-  }
 
-  navigator.geolocation.getCurrentPosition(pos => {
-    currentUserLatLng = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-  });
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      currentUserLatLng = L.latLng(pos.coords.latitude, pos.coords.longitude);
+    },
+    () => alert("Location access denied.")
+  );
 
-  imageInput.addEventListener("change", () => {
-    const files = [...imageInput.files];
-    previewContainer.innerHTML = "";
-    if (files.length > 4) {
-      alert("⚠️ You can upload up to 4 images.");
-      imageInput.value = "";
+ function loadListings() {
+  const filterType = document.getElementById("filterType").value;
+  const filterLocation = document.getElementById("filterLocation").value;
+  const minPrice = parseInt(document.getElementById("minPrice").value) || 0;
+  const maxPrice = parseInt(document.getElementById("maxPrice").value) || Infinity;
+   const filterPurpose = document.getElementById("filterPurpose").value.toLowerCase().trim();
+
+  db.ref("listings").once("value", snapshot => {
+    const data = snapshot.val();
+    const listingsDiv = document.getElementById("listings");
+    listingsDiv.innerHTML = "";
+
+    if (!data) {
+      listingsDiv.innerHTML = "<p>No listings found.</p>";
       return;
     }
-    files.forEach(file => {
-      const img = document.createElement("img");
-      img.src = URL.createObjectURL(file);
-      previewContainer.appendChild(img);
+
+    const sortedEntries = Object.entries(data).sort((a, b) => {
+      const tA = a[1].timestamp || 0;
+      const tB = b[1].timestamp || 0;
+      return tB - tA; // newest first
     });
-  });
+ for (const [id, item] of sortedEntries) {
+ const itemType = (item.type || "").toLowerCase().trim();
+const itemLocation = (item.location || "").toLowerCase().trim();
+const itemPurpose = (item.purpose || "").toLowerCase().trim(); // ✅ only once
 
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    if (!currentUserLatLng) return alert("⚠️ Location not available.");
-const files = [...imageInput.files];
-if (files.length > 4) {
-  alert("You can only upload up to 4 images.");
-  return;
-}
+const filterTypeVal = filterType.toLowerCase().trim();
 
-loading.style.display = "block";
-const imageURLs = [];
+const filterLoc = filterLocation.toLowerCase().trim();
 
-if (files.length > 0) {
-  for (const file of files) {
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("upload_preset", uploadPreset);
-    const res = await axios.post(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, formData);
-    imageURLs.push(res.data.secure_url);
-  }
-}
+const itemLocationWords = itemLocation.split(/[\s,-]+/);
+const filterWords = filterLoc.split(/[\s,-]+/);
+
+const locationMatch = filterLoc === "" || filterWords.some(word =>
+  itemLocationWords.includes(word)
+);
+const typeMatch = filterType === "" || itemType.includes(filterTypeVal);
+const purposeMatch = filterPurpose === "" || itemPurpose === filterPurpose;
+
+const priceMatch = item.price >= minPrice && item.price <= maxPrice;
+
+if (!typeMatch || !purposeMatch || !locationMatch || !priceMatch) continue;
 
 
-    const data = {
-      type: document.getElementById("type").value,
-      purpose: document.getElementById("purpose").value,  // <- Add this line
-      location: document.getElementById("location").value,
-      price: parseInt(document.getElementById("price").value),
-      contact: document.getElementById("contact").value,
-      description: document.getElementById("description").value,
-      images: imageURLs,
-      lat: currentUserLatLng.lat,
-      lng: currentUserLatLng.lng,
-      userId,
-      timestamp: Date.now()
-    };
-
-    await db.ref("listings").push(data);
-    form.reset();
-    previewContainer.innerHTML = "";
-    loading.style.display = "none";
-    alert("✅ Listing uploaded!");
-  });
-
- db.ref("listings").on("value", (snap) => {
-  const listings = snap.val() || {};
-  listingsDiv.innerHTML = "";
-
-  const sortedListings = Object.entries(listings)
-    .sort((a, b) => b[1].timestamp - a[1].timestamp); // newest first
+  // Continue with rendering the card...
 
 
-for (const [id, item] of sortedListings) {
-  const div = document.createElement("div");
-  div.className = "listing-card";
 
-  // IMAGE
-  const imageColumn = document.createElement("div");
-  imageColumn.className = "image-column";
+const card = document.createElement("div");
+card.className = "listing-card";
+card.innerHTML = `
+  <p><strong>Type:</strong> <span class="bold-info type">${item.type}</span></p>
+  <p><strong>Purpose:</strong> <span class="bold-info purpose">${item.purpose || "N/A"}</span></p>
+  <p><strong>Location:</strong> <span class="bold-info location">${item.location}</span></p>
+  <p><strong>Price:</strong> <span class="bold-info price">KES ${item.price}</span></p>
 
-  if (item.images && item.images.length > 0) {
+  <ul class="description">
+    ${(item.description || "").split("\n").map(line => `<li>${line}</li>`).join("")}
+  </ul>
+
+  <p><strong>Contact:</strong> <span class="bold-info contact">${item.contact}</span></p>
+`;
+
+     
+const imageArray = Array.isArray(item.images) ? item.images : [];
+if (imageArray.length > 0) {
   const img = document.createElement("img");
-  img.src = item.images[0];
-  img.style.height = "150px";
-  img.style.width = "100%";
-  img.style.objectFit = "cover";
-  img.style.borderRadius = "8px";
+  img.src = imageArray[0];
+  img.className = "property";
   img.style.transition = "opacity 0.5s ease-in-out";
-  imageColumn.appendChild(img);
+  card.appendChild(img);
 
   let index = 0;
   setInterval(() => {
-    index = (index + 1) % item.images.length;
+    index = (index + 1) % imageArray.length;
     img.style.opacity = 0;
     setTimeout(() => {
-      img.src = item.images[index];
+      img.src = imageArray[index];
       img.style.opacity = 1;
-    }, 500);
+   }, 500);
   }, 5000); // 5 seconds
 }
 
 
-  div.appendChild(imageColumn);
 
-  // INFO
-  const info = document.createElement("div");
-  info.innerHTML = `
-    <h4><b>${item.type}</b> – <b>KES ${item.price}</b></h4>
-    <p style="margin: 2px 0;"><strong>Purpose:</strong> ${item.purpose || "N/A"}</p>
-    <p style="margin: 2px 0;"><strong>Location:</strong> ${item.location}</p>
-    <p style="margin: 2px 0;"><strong>Contact:</strong> ${item.contact}</p>
-    <ul class="description">
-      ${(item.description || "").split("\n").map(line => `<li>${line}</li>`).join("")}
-    </ul>
-  `;
-  div.appendChild(info);
+     const mapId = "map-" + id;
 
-  // EDIT/DELETE IF OWNER
-  if (item.userId === userId) {
-    const editBtn = document.createElement("button");
-    editBtn.textContent = "✏️ Edit";
-    editBtn.className = "edit-btn";
-    editBtn.onclick = () => {
-      const newType = prompt("Edit type:", item.type);
-      const newPrice = prompt("Edit price:", item.price);
-      const newLocation = prompt("Edit location:", item.location);
-      const newContact = prompt("Edit contact:", item.contact);
-      const newDescription = prompt("Edit description:", item.description || "");
-const newPurpose = prompt("Edit purpose:", item.purpose || "");
+// Show Directions button
+const btn = document.createElement("button");
+btn.textContent = "📍 Show Directions";
+btn.onclick = () => showMapForListing(item.lat, item.lng, mapId);
 
-      if (newType && newPrice && newLocation && newContact) {
-        db.ref("listings/" + id).update({
-          type: newType,
-          price: parseInt(newPrice),
-          location: newLocation,
-          contact: newContact,
-          description: newDescription,
-   purpose: newPurpose
-        }).then(() => {
-          alert("✅ Listing updated.");
-        }).catch(err => {
-          alert("❌ Error updating: " + err.message);
-        });
-      }
-    };
+// Chat button
+const chatBtn = document.createElement("button");
+chatBtn.textContent = "💬 Chat with Landlord";
+chatBtn.style.background = "#ff9800";
+chatBtn.style.color = "white";
+chatBtn.style.marginTop = "5px";
+chatBtn.style.borderRadius = "5px";
+chatBtn.onclick = () => openChat(item.contact, item.location, item.type, id);
+// Map container
+const mapDiv = document.createElement("div");
+mapDiv.id = mapId;
 
-    const delBtn = document.createElement("button");
-    delBtn.textContent = "🗑️ Delete";
-    delBtn.className = "delete-btn";
-    delBtn.onclick = () => {
-      if (confirm("Delete this listing?")) {
-        db.ref("listings/" + id).remove();
-      }
-    };
+// Append to card
+card.appendChild(btn);
+card.appendChild(chatBtn); // ✅ new chat button
+card.appendChild(mapDiv);
+listingsDiv.appendChild(card);
 
-    div.appendChild(editBtn);
-    div.appendChild(delBtn);
-  }
-
-  // ✅ Append the full card just ONCE
-  listingsDiv.appendChild(div);
+    }
+  });
 }
 
-});
 
 
+  function showMapForListing(destLat, destLng, containerId) {
+  const container = document.getElementById(containerId);
+  container.innerHTML = "";
+
+  const mapDiv = document.createElement("div");
+  mapDiv.style.height = "300px";
+  mapDiv.style.marginTop = "10px";
+  mapDiv.style.borderRadius = "10px";
+  container.appendChild(mapDiv);
+
+  const directionsList = document.createElement("div");
+  directionsList.className = "directions-text";
+  directionsList.style.marginTop = "10px";
+  directionsList.style.padding = "10px";
+  directionsList.style.background = "#f9f9f9";
+  directionsList.style.borderRadius = "8px";
+  directionsList.innerHTML = "<strong>Directions:</strong><br><em>Loading...</em>";
+  container.appendChild(directionsList);
+
+  const map = L.map(mapDiv).setView([destLat, destLng], 13);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+  const destinationLatLng = L.latLng(destLat, destLng);
+  L.marker(destinationLatLng).addTo(map).bindPopup("Listing Location");
+
+  let userMarker = null;
+  let routeControl = null;
+
+  function updateRoute(userLatLng) {
+    if (userMarker) {
+      userMarker.setLatLng(userLatLng);
+    } else {
+      userMarker = L.marker(userLatLng, {
+        icon: L.icon({
+          iconUrl: "https://cdn-icons-png.flaticon.com/512/684/684908.png",
+          iconSize: [25, 25],
+          iconAnchor: [12, 12]
+        })
+      }).addTo(map).bindPopup("You are here");
+    }
+
+    if (routeControl) {
+      map.removeControl(routeControl);
+    }
+
+    routeControl = L.Routing.control({
+      waypoints: [userLatLng, destinationLatLng],
+      routeWhileDragging: false,
+      addWaypoints: false,
+      createMarker: () => null,
+      show: false,
+      lineOptions: {
+        styles: [{ color: 'blue', weight: 4, opacity: 0.8 }]
+      }
+    }).addTo(map);
+
+    routeControl.on('routesfound', function (e) {
+      const route = e.routes[0];
+      const distanceKm = (route.summary.totalDistance / 1000).toFixed(2);
+      const timeMin = (route.summary.totalTime / 60).toFixed(0);
+
+      let steps = `<strong>Live Step-by-Step Directions:</strong><br>`;
+      const instructions = route.instructions || [];
+
+      // Leaflet sometimes leaves instructions empty, fix it manually
+      const formatter = new L.Routing.Formatter();
+      if (instructions.length === 0 && route.instructions === undefined) {
+        const legs = route.instructions = formatter._getInstructions.call({options:{}}, route);
+      }
+
+      for (const step of instructions) {
+        if (step.text) {
+          steps += `➡️ ${step.text} (${(step.distance / 1000).toFixed(2)} km)<br>`;
+        }
+      }
+
+      steps += `<br><em>Total Distance:</em> ${distanceKm} km<br>`;
+      steps += `<em>Estimated Time:</em> ${timeMin} mins`;
+
+      directionsList.innerHTML = steps;
+    });
+  }
+
+  // Watch live location and update route
+  navigator.geolocation.watchPosition(
+    pos => {
+      const userLatLng = L.latLng(pos.coords.latitude, pos.coords.longitude);
+      updateRoute(userLatLng);
+    },
+    err => {
+      alert("Location tracking failed: " + err.message);
+    },
+    {
+      enableHighAccuracy: true,
+      maximumAge: 3000,
+      timeout: 7000
+    }
+  );
+}
+window.onload = () => {
+  loadListings();
+};
+
+
+function openChat(contact, location, type, listingId) {
+  const message = prompt(`💬 Start chatting with the landlord of this ${type} in ${location}.\n\nType your message below:`);
+
+  if (!message) return;
+
+  const phoneNumber = contact.replace(/\D/g, '');
+
+  const linkToListing = `https://webs-star.github.io/realestate.com/customers.html?listing=${listingId}`;
+
+  const preFilled = `Hello, I'm interested in the ${type} located in ${location}. I saw your listing on *RealPlot Connect*.\n\n${message}\n\n🔗 View listing: ${linkToListing}`;
+  const whatsappURL = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(preFilled)}`;
+
+  window.open(whatsappURL, "_blank");
+}
+
+
+
+  
 </script>
+
 </body>
 </html>
