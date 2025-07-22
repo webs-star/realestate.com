@@ -465,240 +465,207 @@ window.googleLogin = () => {
 
 <div id="listings"></div>
 
-
-
-
-
-
-
 <script>
-  
+const cloudName = "dwvt4e9o2";
+const uploadPreset = "unsigned_upload";
 
-  const cloudName = "dwvt4e9o2";
-  const uploadPreset = "unsigned_upload";
+const form = document.getElementById("uploadForm");
+const imageInput = document.getElementById("images");
+const previewContainer = document.getElementById("previewContainer");
+const listingsDiv = document.getElementById("listings");
+const loading = document.getElementById("loading");
 
-  const form = document.getElementById("uploadForm");
-  const imageInput = document.getElementById("images");
-  const previewContainer = document.getElementById("previewContainer");
-  const listingsDiv = document.getElementById("listings");
-  const loading = document.getElementById("loading");
-
-  let currentUserLatLng = null;
-  let userId = localStorage.getItem("realplot_user_id");
-  if (!userId) {
-    userId = "user_" + Date.now();
-    localStorage.setItem("realplot_user_id", userId);
-  }
-
-  navigator.geolocation.getCurrentPosition(pos => {
-    currentUserLatLng = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-  });
-
-  imageInput.addEventListener("change", () => {
-    const files = [...imageInput.files];
-    previewContainer.innerHTML = "";
-    if (files.length > 4) {
-      alert("⚠️ You can upload up to 4 images.");
-      imageInput.value = "";
-      return;
-    }
-    files.forEach(file => {
-      const img = document.createElement("img");
-      img.src = URL.createObjectURL(file);
-      previewContainer.appendChild(img);
-    });
-  });
-
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    if (!currentUserLatLng) return alert("⚠️ Location not available.");
-const files = [...imageInput.files];
-if (files.length > 4) {
-  alert("You can only upload up to 4 images.");
-  return;
+let currentUserLatLng = null;
+let userId = localStorage.getItem("autoconnect_user_id");
+if (!userId) {
+  userId = "user_" + Date.now();
+  localStorage.setItem("autoconnect_user_id", userId);
 }
 
-loading.style.display = "block";
-const imageURLs = [];
+// Get GPS
+navigator.geolocation.getCurrentPosition(pos => {
+  currentUserLatLng = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+});
 
+// Image preview
+imageInput.addEventListener("change", () => {
+  const files = [...imageInput.files];
+  previewContainer.innerHTML = "";
+  if (files.length > 4) {
+    alert("⚠️ You can upload up to 4 images.");
+    imageInput.value = "";
+    return;
+  }
+  files.forEach(file => {
+    const img = document.createElement("img");
+    img.src = URL.createObjectURL(file);
+    previewContainer.appendChild(img);
+  });
+});
 
-
-
-
-  // ✅ Contact validation
-  const rawContact = document.getElementById("contact").value.trim();
-  const validContactPattern = /^\+254\d{9}$/;
-
-  if (!validContactPattern.test(rawContact)) {
-    alert("❌ Enter a valid Kenyan number starting with +254 followed by 9 digits.");
-    loading.style.display = "none"; // Hide loader on error
+// Upload handler
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  if (!currentUserLatLng) return alert("⚠️ Location not available.");
+  const files = [...imageInput.files];
+  if (files.length > 4) {
+    alert("You can only upload up to 4 images.");
     return;
   }
 
+  loading.style.display = "block";
+  const imageURLs = [];
 
-
-
-
-
-
-
-
-
-
-
-    
-
-if (files.length > 0) {
-  for (const file of files) {
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("upload_preset", uploadPreset);
-    const res = await axios.post(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, formData);
-    imageURLs.push(res.data.secure_url);
-  }
-}
-
-
-    const data = {
-      type: document.getElementById("type").value,
-      purpose: document.getElementById("purpose").value,  // <- Add this line
-      location: document.getElementById("location").value,
-      price: parseInt(document.getElementById("price").value),
-      contact: rawContact,
-      description: document.getElementById("description").value,
-      images: imageURLs,
-      lat: currentUserLatLng.lat,
-      lng: currentUserLatLng.lng,
-      userId,
-      timestamp: Date.now()
-    };
-
-    await db.ref("vehicles").push(data);
-
-    form.reset();
-    previewContainer.innerHTML = "";
+  const rawContact = document.getElementById("contact").value.trim();
+  const validContactPattern = /^\+254\d{9}$/;
+  if (!validContactPattern.test(rawContact)) {
+    alert("❌ Enter a valid Kenyan number starting with +254 followed by 9 digits.");
     loading.style.display = "none";
-    alert("✅ Listing uploaded!");
-  });
+    return;
+  }
 
+  if (files.length > 0) {
+    for (const file of files) {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("upload_preset", uploadPreset);
+      const res = await axios.post(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, formData);
+      imageURLs.push(res.data.secure_url);
+    }
+  }
+
+  const data = {
+    type: document.getElementById("type").value,
+    purpose: document.getElementById("purpose").value,
+    location: document.getElementById("location").value,
+    price: parseInt(document.getElementById("price").value),
+    contact: rawContact,
+    description: document.getElementById("description").value,
+    images: imageURLs,
+    lat: currentUserLatLng.lat,
+    lng: currentUserLatLng.lng,
+    userId,
+    timestamp: Date.now()
+  };
+
+  await db.ref("vehicles").push(data);
+
+  form.reset();
+  previewContainer.innerHTML = "";
+  loading.style.display = "none";
+  alert("✅ Vehicle listing uploaded!");
+});
+
+// Fetch and display listings
 db.ref("vehicles").on("value", (snap) => {
-
-
   const listings = snap.val() || {};
   listingsDiv.innerHTML = "";
 
   const sortedListings = Object.entries(listings)
     .sort((a, b) => b[1].timestamp - a[1].timestamp); // newest first
 
+  for (const [id, item] of sortedListings) {
+    const div = document.createElement("div");
+    div.className = "listing-card";
 
-for (const [id, item] of sortedListings) {
-  const div = document.createElement("div");
-  div.className = "listing-card";
+    // Image carousel
+    const imageColumn = document.createElement("div");
+    imageColumn.className = "image-column";
+    if (item.images && item.images.length > 0) {
+      const img = document.createElement("img");
+      img.src = item.images[0];
+      img.style.height = "150px";
+      img.style.width = "100%";
+      img.style.objectFit = "cover";
+      img.style.borderRadius = "8px";
+      img.style.transition = "opacity 0.5s ease-in-out";
+      imageColumn.appendChild(img);
 
-  // IMAGE
-  const imageColumn = document.createElement("div");
-  imageColumn.className = "image-column";
+      let index = 0;
+      setInterval(() => {
+        index = (index + 1) % item.images.length;
+        img.style.opacity = 0;
+        setTimeout(() => {
+          img.src = item.images[index];
+          img.style.opacity = 1;
+        }, 500);
+      }, 5000);
+    }
+    div.appendChild(imageColumn);
 
-  if (item.images && item.images.length > 0) {
-  const img = document.createElement("img");
-  img.src = item.images[0];
-  img.style.height = "150px";
-  img.style.width = "100%";
-  img.style.objectFit = "cover";
-  img.style.borderRadius = "8px";
-  img.style.transition = "opacity 0.5s ease-in-out";
-  imageColumn.appendChild(img);
+    // Info
+    const info = document.createElement("div");
+    info.innerHTML = `
+      <h4><b>${item.type}</b> – <b>KES ${item.price}</b></h4>
+      <p><strong>Purpose:</strong> ${item.purpose || "N/A"}</p>
+      <p><strong>Location:</strong> ${item.location}</p>
+      <p><strong>Contact:</strong> ${item.contact}</p>
+      <ul class="description">
+        ${(item.description || "").split("\n").map(line => `<li>${line}</li>`).join("")}
+      </ul>
+    `;
+    div.appendChild(info);
 
-  let index = 0;
-  setInterval(() => {
-    index = (index + 1) % item.images.length;
-    img.style.opacity = 0;
-    setTimeout(() => {
-      img.src = item.images[index];
-      img.style.opacity = 1;
-    }, 500);
-  }, 5000); // 5 seconds
-}
+    // Owner controls
+    if (item.userId === userId) {
+      const editBtn = document.createElement("button");
+      editBtn.textContent = "✏️ Edit";
+      editBtn.className = "edit-btn";
+      editBtn.onclick = () => {
+        const newType = prompt("Edit type:", item.type);
+        const newPrice = prompt("Edit price:", item.price);
+        const newLocation = prompt("Edit location:", item.location);
+        let newContact = prompt("Edit contact:", item.contact)?.trim();
 
+        if (!newContact) return;
+        if (/^0\d{9}$/.test(newContact)) {
+          newContact = "+254" + newContact.slice(1);
+        }
+        if (!/^\+254\d{9}$/.test(newContact)) {
+          alert("❌ Invalid contact. Use format: +254712345678");
+          return;
+        }
 
-  div.appendChild(imageColumn);
+        const newDescription = prompt("Edit description:", item.description || "");
+        const newPurpose = prompt("Edit purpose:", item.purpose || "");
 
-  // INFO
-  const info = document.createElement("div");
-  info.innerHTML = `
-    <h4><b>${item.type}</b> – <b>KES ${item.price}</b></h4>
-    <p style="margin: 2px 0;"><strong>Purpose:</strong> ${item.purpose || "N/A"}</p>
-    <p style="margin: 2px 0;"><strong>Location:</strong> ${item.location}</p>
-    <p style="margin: 2px 0;"><strong>Contact:</strong> ${item.contact}</p>
-    <ul class="description">
-      ${(item.description || "").split("\n").map(line => `<li>${line}</li>`).join("")}
-    </ul>
-  `;
-  div.appendChild(info);
+        if (newType && newPrice && newLocation && newContact) {
+          db.ref("vehicles/" + id).update({
+            type: newType,
+            price: parseInt(newPrice),
+            location: newLocation,
+            contact: newContact,
+            description: newDescription,
+            purpose: newPurpose
+          }).then(() => {
+            alert("✅ Listing updated.");
+          }).catch(err => {
+            alert("❌ Error updating: " + err.message);
+          });
+        }
+      };
 
-  // EDIT/DELETE IF OWNER
-  if (item.userId === userId) {
-    const editBtn = document.createElement("button");
-    editBtn.textContent = "✏️ Edit";
-    editBtn.className = "edit-btn";
-    editBtn.onclick = () => {
-      const newType = prompt("Edit type:", item.type);
-      const newPrice = prompt("Edit price:", item.price);
-      const newLocation = prompt("Edit location:", item.location);
-     let newContact = prompt("Edit contact:", item.contact)?.trim();
-if (!newContact) return;
+      const delBtn = document.createElement("button");
+      delBtn.textContent = "🗑️ Delete";
+      delBtn.className = "delete-btn";
+      delBtn.onclick = () => {
+        if (confirm("Delete this listing?")) {
+          db.ref("vehicles/" + id).remove();
+        }
+      };
 
-// Auto-convert if starts with 0 (e.g., 0712...) ➝ +254712...
-if (/^0\d{9}$/.test(newContact)) {
-  newContact = "+254" + newContact.slice(1);
-}
+      div.appendChild(editBtn);
+      div.appendChild(delBtn);
+    }
 
-// Validate +254 followed by exactly 9 digits
-const validContactPattern = /^\+254\d{9}$/;
-if (!validContactPattern.test(newContact)) {
-  alert("❌ Invalid contact. Use format: +254712345678");
-  return;
-}
-
-      const newDescription = prompt("Edit description:", item.description || "");
-const newPurpose = prompt("Edit purpose:", item.purpose || "");
-
-      if (newType && newPrice && newLocation && newContact) {
-        db.ref("listings/" + id).update({
-          type: newType,
-          price: parseInt(newPrice),
-          location: newLocation,
-          contact: newContact,
-          description: newDescription,
-   purpose: newPurpose
-        }).then(() => {
-          alert("✅ Listing updated.");
-        }).catch(err => {
-          alert("❌ Error updating: " + err.message);
-        });
-      }
-    };
-
-    const delBtn = document.createElement("button");
-    delBtn.textContent = "🗑️ Delete";
-    delBtn.className = "delete-btn";
-    delBtn.onclick = () => {
-      if (confirm("Delete this listing?")) {
-        db.ref("listings/" + id).remove();
-      }
-    };
-
-    div.appendChild(editBtn);
-    div.appendChild(delBtn);
+    listingsDiv.appendChild(div);
   }
-
-  // ✅ Append the full card just ONCE
-  listingsDiv.appendChild(div);
-}
-
 });
-
-
 </script>
 </body>
 </html>
+
+
+
+
+
