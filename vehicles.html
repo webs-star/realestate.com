@@ -573,14 +573,17 @@ if (files.length > 0) {
       timestamp: Date.now()
     };
 
-    await db.ref("listings").push(data);
+    await db.ref("vehicles").push(data);
+
     form.reset();
     previewContainer.innerHTML = "";
     loading.style.display = "none";
     alert("✅ Listing uploaded!");
   });
 
- db.ref("listings").on("value", (snap) => {
+db.ref("vehicles").on("value", (snap) => {
+
+
   const listings = snap.val() || {};
   listingsDiv.innerHTML = "";
 
