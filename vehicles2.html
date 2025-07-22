@@ -288,10 +288,15 @@ if (imageArray.length > 0) {
 
 
      const mapId = "map-" + id;
-
 // Show Directions button
 const btn = document.createElement("button");
 btn.textContent = "📍 Show Directions";
+btn.style.background = "#4CAF50";
+btn.style.color = "white";
+btn.style.marginTop = "5px";
+btn.style.borderRadius = "5px";
+btn.style.padding = "8px 12px";
+btn.style.cursor = "pointer";
 btn.onclick = () => showMapForListing(item.lat, item.lng, mapId);
 
 // Chat button
