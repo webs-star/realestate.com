@@ -43,14 +43,18 @@
       color: #333;
     }
 
-   header {
+  header {
   background: url('https://res.cloudinary.com/dwvt4e9o2/image/upload/v1753194920/pexels-freestockpro-1031698_1_vpxwhp.jpg') no-repeat center center/cover;
   color: white;
-  padding: 100px 20px; /* increased padding for more height */
+  padding: 100px 20px;
   text-align: center;
   position: relative;
-  clip-path: ellipse(100% 60% at 50% 40%); /* circular/oval shape */
+  clip-path: ellipse(80% 60% at 50% 40%); /* Reduced width: 80% */
+  width: 80%;         /* Reduce overall width */
+  margin: 0 auto;     /* Center the header */
+  border-radius: 20px; /* Optional: rounded corners */
 }
+
 
     .site-logo {
       position: absolute;
