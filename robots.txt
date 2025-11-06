@@ -1,4 +1,8 @@
 User-agent: *
-Allow: /
+Disallow: /
 
-Sitemap: https://webs-star.github.io/realestate.com/sitemap.xml
+
+
+Allow: /realestate.com/
+Allow: /realestate.com/customers.html
+Allow: /realestate.com/realplot.html
