@@ -531,6 +531,25 @@ window.googleLogin = () => {
 </div>
 
 
+
+
+<!-- DONATE SECTION FOR OWNERS -->
+<section style="text-align:center; margin:60px 0; background:#f9f9f9; padding:40px 20px; border-radius:12px; box-shadow:0 4px 10px rgba(0,0,0,0.05);">
+  <h2 style="color:#4CAF50; margin-bottom:20px;">💚 Support RealPlot Connect</h2>
+  <p>Thank you for listing your property with us! <br>If your property is rented or sold successfully,<br> consider donating to help us keep RealPlot <br>running and improving for all owners.</p>
+  
+  <button id="show-mpesa" 
+          style="background:#FFA500; color:white; padding:14px 28px; border:none; border-radius:10px; font-size:17px; cursor:pointer; margin-top:20px; font-weight:600; transition:.3s;">
+    Donate via M-Pesa
+  </button>
+  
+  <p id="mpesa-number" style="margin-top:15px; font-weight:bold; font-size:18px; display:none; color:#333;">
+    +254 769 255 782
+  </p>
+</section>
+
+
+  
 <h2 style="text-align:center; color:#0056b3; margin-top:40px;">
   🏘️ All Active Listings on RealPlot Connect
 </h2>
@@ -766,6 +785,18 @@ const newPurpose = prompt("Edit purpose:", item.purpose || "");
 });
 
 
+
+
+
+const donateBtn = document.getElementById('show-mpesa');
+  const mpesaNumber = document.getElementById('mpesa-number');
+
+  donateBtn.addEventListener('click', () => {
+    const isVisible = mpesaNumber.style.display === 'block';
+    mpesaNumber.style.display = isVisible ? 'none' : 'block';
+    donateBtn.textContent = isVisible ? 'Donate via M-Pesa' : 'Thank You!';
+  });
+  
 </script>
 </body>
 </html>
