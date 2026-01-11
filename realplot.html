@@ -63,272 +63,167 @@
 <!-- Favicon -->
 <link rel="icon" href="favicon.ico" />
 
-  
-</head>
+  <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600;700&display=swap" rel="stylesheet">
+ 
+ 
+ <style>
+  /* ===== Reset & Base ===== */
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Segoe UI', sans-serif; background:#f4f4f4; color:#333; }
+  a { text-decoration:none; }
 
+  /* ===== Header Hero ===== */
+  header {
+    position:relative;
+    text-align:center;
+    color:white;
+    padding:100px 20px 140px;
+    background: linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.55)), url('https://images.unsplash.com/photo-1570129477492-45c003edd2be') center/cover no-repeat;
+  }
+  header img.logo { width:100px; border-radius:14px; box-shadow:0 4px 12px rgba(0,0,0,.4); margin-bottom:20px; }
+  header h1 { font-size:40px; line-height:1.2; margin-bottom:15px; }
+  header p { font-size:18px; max-width:720px; margin:auto 0 25px; line-height:1.6; }
+  .cta-buttons { display:flex; justify-content:center; gap:20px; flex-wrap:wrap; margin-top:25px; }
+  .cta-buttons a { background:#4CAF50; color:white; padding:14px 28px; font-size:17px; border-radius:10px; transition:.3s; font-weight:600; }
+  .cta-buttons a:hover { background:#388E3C; }
+  .cta-buttons a.alt { background:#fff; color:#4CAF50; font-weight:bold; }
 
-  
-  <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      margin: 0;
-      padding: 0;
-      background: #f4f4f4;
-      color: #333;
-    }
+  /* ===== Hero Animation: property slider ===== */
+  .hero-slider { margin-top:40px; display:flex; justify-content:center; gap:15px; overflow-x:auto; scroll-behavior:smooth; padding-bottom:10px; }
+  .hero-slider img { width:220px; height:140px; object-fit:cover; border-radius:12px; box-shadow:0 3px 12px rgba(0,0,0,.3); transition:transform .3s; }
+  .hero-slider img:hover { transform: scale(1.05); }
 
-    header {
-      background: url('https://images.unsplash.com/photo-1570129477492-45c003edd2be') no-repeat center center/cover;
-      color: white;
-      padding: 60px 20px;
-      text-align: center;
-      position: relative;
-    }
+  /* ===== Sections ===== */
+  main { max-width:1100px; margin:auto; padding:40px 20px; }
+  section { margin-bottom:60px; }
+  h2 { color:#4CAF50; font-size:24px; margin-bottom:20px; }
+  p, ul, ol { font-size:16px; line-height:1.7; }
+  ul { padding-left:20px; }
+  ol { padding-left:20px; }
 
-    .site-logo {
-      position: absolute;
-      top: 10px;
-      left: 20px;
-      width: 80px;
-      height: 80px;
-      border-radius: 50%;
-      object-fit: cover;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-    }
+  /* ===== Features ===== */
+  .features-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:20px; }
+  .feature-card { background:white; padding:20px; border-radius:12px; box-shadow:0 3px 10px rgba(0,0,0,.1); }
+  .feature-card h4 { margin-bottom:10px; color:#4CAF50; }
+  .feature-card p { color:#555; }
 
-    .top-links {
-      position: absolute;
-      top: 10px;
-      right: 20px;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
+  /* ===== How It Works ===== */
+  .how-works ol { counter-reset:step; }
+  .how-works li { position:relative; padding-left:50px; margin-bottom:25px; }
+  .how-works li::before {
+    counter-increment:step;
+    content:counter(step);
+    position:absolute; left:0; top:0;
+    width:35px; height:35px; background:#4CAF50; color:#fff;
+    border-radius:50%; display:flex; align-items:center; justify-content:center;
+    font-weight:bold; font-size:16px;
+  }
 
-    .top-links a {
-      background: rgba(0,0,0,0.7);
-      color: #fff;
-      padding: 8px 12px;
-      border-radius: 6px;
-      text-decoration: none;
-      font-size: 13px;
-    }
+  /* ===== Testimonials ===== */
+  .testimonial-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:20px; }
+  .testimonial-card { background:white; border-left:5px solid #4CAF50; border-radius:12px; padding:20px; box-shadow:0 3px 10px rgba(0,0,0,.1); }
+  .testimonial-card p { font-style:italic; color:#333; margin-bottom:10px; }
+  .testimonial-card h4 { color:#777; font-size:0.95rem; font-weight:normal; }
 
-    .top-links a:hover {
-      background: #4CAF50;
-    }
+  /* ===== Floating WhatsApp ===== */
+  .whatsapp-float { position:fixed; bottom:20px; right:20px; background-color:#25D366; color:white; padding:14px 20px; border-radius:30px; font-size:16px; font-weight:bold; box-shadow:0 4px 6px rgba(0,0,0,.3); z-index:1000; }
 
-    h1 {
-      font-size: 32px;
-      margin-bottom: 10px;
-    }
+  /* ===== Footer ===== */
+  footer { background:#000; color:#ccc; text-align:center; padding:20px; font-size:14px; }
+  footer a { color:#4CAF50; }
 
-    main {
-      padding: 20px;
-      max-width: 1100px;
-      margin: auto;
-    }
+  /* ===== Responsive ===== */
+  @media (max-width:600px){
+    header h1 { font-size:28px; }
+    header p { font-size:16px; }
+    .cta-buttons a { font-size:16px; padding:12px 22px; }
+    .hero-slider img { width:160px; height:100px; }
+  }
+</style>
 
-    section {
-      margin-bottom: 40px;
-    }
-
-    h2 {
-      color: #4CAF50;
-      margin-bottom: 10px;
-      font-size: 22px;
-    }
-
-    ul, ol {
-      line-height: 1.7;
-      padding-left: 20px;
-    }
-
-    .cta-buttons {
-      display: flex;
-      justify-content: center;
-      gap: 20px;
-      flex-wrap: wrap;
-      margin: 40px 0;
-    }
-
-    .cta-buttons a {
-      background: #4CAF50;
-      color: white;
-      padding: 12px 24px;
-      text-decoration: none;
-      font-size: 16px;
-      border-radius: 8px;
-      transition: background 0.3s;
-    }
-
-    .cta-buttons a:hover {
-      background: #388E3C;
-    }
-
-    .whatsapp-float {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background-color: #25D366;
-      color: white;
-      padding: 14px 20px;
-      border-radius: 30px;
-      font-size: 16px;
-      font-weight: bold;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-      z-index: 1000;
-      text-decoration: none;
-    }
-
-    .testimonial-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 20px;
-    }
-
-    .testimonial-card {
-      background: #fff;
-      border-left: 5px solid #4CAF50;
-      border-radius: 8px;
-      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
-      padding: 20px;
-    }
-
-    .testimonial-card p {
-      font-style: italic;
-      color: #333;
-      margin-bottom: 10px;
-    }
-
-    .testimonial-card h4 {
-      color: #777;
-      font-size: 0.95rem;
-      font-weight: normal;
-    }
-
-    footer {
-      background: #000;
-      color: #ccc;
-      text-align: center;
-      padding: 15px;
-      font-size: 14px;
-    }
-
-    @media (max-width: 600px) {
-      .top-links {
-        position: static;
-        justify-content: center;
-        margin-top: 10px;
-      }
-
-      .site-logo {
-        position: static;
-        display: block;
-        margin: 0 auto 10px;
-      }
-
-      h1 {
-        font-size: 24px;
-      }
-
-      h2 {
-        font-size: 18px;
-      }
-
-      .cta-buttons a {
-        font-size: 14px;
-        padding: 10px 18px;
-      }
-    }
-  </style>
-</head>
 <body>
 <header>
-  <div class="top-links">
-    <a href="https://webs-star.github.io/realestate.com/" target="_blank">🏠 Sell / Lease a Property</a>
-    <a href="https://webs-star.github.io/realestate2/realplotall" target="_blank">👀 Buy or Rent a Property</a>
+  <img src="https://res.cloudinary.com/dwvt4e9o2/image/upload/v1752934492/ChatGPT_Image_Jul_19_2025_04_56_24_PM_jadg82.png" alt="RealPlot Connect Logo" class="logo" />
+  
+  <h1>RealPlot Connect
+Smart Property Listing & Real-Time Navigation Platform <span style="color:#4CAF50;">for Everyone</span></h1>
+  
+  <p>Discover, list, and navigate properties across Kenya and Africa.<br>
+     Houses • Rentals • Plots • Commercial Property<br>
+     Connect directly with real buyers, tenants, or owners — no agents, no commissions.</p>
+  
+  <div class="cta-buttons">
+    <a href="https://webs-star.github.io/realestate.com/">➕ List Property FREE</a>
+    <a href="https://webs-star.github.io/realestate2/realplotall" class="alt">🔍 Find Properties</a>
   </div>
-  <h1>RealPlot Connect</h1>
-  <p>Smart Property Listing & Real-Time Navigation Platform – Kenya</p>
+  
+  <p style="font-size:14px; opacity:.9;">✔ Free Listings • ✔ Transparent • ✔ Real-Time Map Visibility</p>
+  
+  <div class="hero-slider">
+    <img src="https://images.pexels.com/photos/271816/pexels-photo-271816.jpeg" alt="Modern House">
+    <img src="https://images.pexels.com/photos/33531526/pexels-photo-33531526.jpeg" alt="Plot/Land">
+    <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c" alt="Rental Apartment">
+    <img src="https://images.pexels.com/photos/261169/pexels-photo-261169.jpeg" alt="Commercial Property">
+  </div>
 </header>
+
 
 <main>
 
+<!-- FEATURES -->
 <section>
-  <div style="display:flex; align-items:center; gap:15px; margin-bottom:15px;">
-    <img src="https://res.cloudinary.com/dwvt4e9o2/image/upload/v1752934492/ChatGPT_Image_Jul_19_2025_04_56_24_PM_jadg82.png"
-         alt="RealPlot Connect Logo"
-         style="width:90px; height:auto; border-radius:12px;" />
-    <h2 style="margin:0;">🌐 What is RealPlot Connect?</h2>
+  <h2>🌟 Key Benefits</h2>
+  <div class="features-grid">
+    <div class="feature-card">
+      <h4>📍 Free Property Listings</h4>
+      <p>List land, houses, rentals, and commercial property at no cost.</p>
+    </div>
+    <div class="feature-card">
+      <h4>🗺️ Live Interactive Map</h4>
+      <p>Properties appear instantly on a map for nearby buyers and tenants.</p>
+    </div>
+    <div class="feature-card">
+      <h4>🚀 Real-Time Navigation</h4>
+      <p>Walk or drive to properties with voice-guided directions and accurate locations.</p>
+    </div>
+    <div class="feature-card">
+      <h4>🔧 Editable Listings</h4>
+      <p>Update or remove your listings anytime without hassle.</p>
+    </div>
+    <div class="feature-card">
+      <h4>💼 Verified Leads</h4>
+      <p>Only serious buyers pay a small navigation fee, protecting you from fake inquiries.</p>
+    </div>
+    <div class="feature-card">
+      <h4>📱 Multi-Device Friendly</h4>
+      <p>Access your listings on mobile, tablet, and desktop with full functionality.</p>
+    </div>
+    <div class="feature-card">
+      <h4>⚡ Immediate Exposure</h4>
+      <p>Your property appears on the map instantly for nearby buyers.</p>
+    </div>
+    <div class="feature-card">
+      <h4>🛡️ Commission-Free</h4>
+      <p>No middlemen, no hidden charges, and full control remains with you.</p>
+    </div>
   </div>
-
-  <p>
-    RealPlot Connect is a smart Kenyan property platform that allows landowners and landlords
-    to list properties for <strong>FREE</strong>, while enabling customers to discover and
-    navigate to real properties using a live, interactive map with voice-guided directions.
-  </p>
 </section>
 
-<section>
-  <h2>⚙️ How We Operate & Pricing</h2>
-  <ul>
-    <li>👀 <strong>Viewing all listings is 100% FREE</strong> — anyone can browse properties without paying.</li>
-    <li>🗺️ <strong>A small one-time fee</strong> is required to unlock <strong>real-time map navigation</strong> and view the <strong>exact owner location</strong>.</li>
-    <li>🏠 <strong>Listing a property is completely FREE</strong> for all landowners and landlords.</li>
-    <li>🤝 <strong>No commissions, no hidden charges</strong> — even after a successful sale or rental.</li>
-    <li>✅ Once the navigation fee is paid, <strong>nothing else is charged</strong>.</li>
-  </ul>
-
-  <p style="background:#f0f8ff; padding:12px; border-radius:6px;">
-    🔐 This model protects property owners from fake inquiries while ensuring serious buyers
-    get accurate directions and real locations.
-  </p>
-</section>
-
-<section>
-  <h2>🌍 Key Services Offered</h2>
-  <ul>
-    <li><strong>Free Property Listings:</strong> Owners list land, houses, rentals, and commercial property at no cost.</li>
-    <li><strong>Live Interactive Map:</strong> Properties appear instantly on the map for nearby buyers.</li>
-    <li><strong>Advanced Filters:</strong> Search by property type, county, town, and price range.</li>
-    <li><strong>Real-Time Navigation:</strong> Walking directions with automatic updates and voice guidance.</li>
-    <li><strong>Editable Listings:</strong> Owners can update or delete listings anytime.</li>
-  </ul>
-</section>
-
-<section>
-  <h2>🔍 Who Uses RealPlot Connect?</h2>
-  <ul>
-    <li><strong>Landowners:</strong> Sell plots or farms with accurate location visibility.</li>
-    <li><strong>Landlords:</strong> Advertise rental houses and apartments to nearby tenants.</li>
-    <li><strong>Buyers & Tenants:</strong> Discover properties by distance, price, and location.</li>
-  </ul>
-</section>
-
-<section>
-  <h2>🗺️ How It Works</h2>
+<!-- HOW IT WORKS -->
+<section class="how-works">
+  <h2>🗺️ How RealPlot Connect Works</h2>
   <ol>
-    <li>Owners list properties by filling details and allowing location access.</li>
-    <li>Customers browse all listings freely.</li>
-    <li>To navigate and view owner location, a small access fee is paid.</li>
-    <li>Users receive live walking directions with voice guidance.</li>
+    <li>Landowners or landlords <strong>list properties for free</strong> using our platform.</li>
+    <li>Customers browse all listings freely and find nearby properties.</li>
+    <li>To get live directions to the property, a small one-time navigation fee is paid.</li>
+    <li>Once paid, users receive <strong>voice-guided walking or driving directions</strong> to the exact location.</li>
+    <li>Owners can edit or remove listings anytime, keeping control in their hands.</li>
   </ol>
 </section>
 
+<!-- TESTIMONIALS -->
 <section>
-  <h2>🎯 Key Benefits</h2>
-  <ul>
-    <li>Free property listing for owners</li>
-    <li>No middlemen or commissions</li>
-    <li>Accurate real-world locations</li>
-    <li>Live walking directions</li>
-    <li>Trusted, transparent pricing</li>
-  </ul>
-</section>
-
-<section>
-  <h2>🌟 What Our Users Say</h2>
+  <h2>💬 What Our Users Say</h2>
   <div class="testimonial-grid">
     <div class="testimonial-card">
       <p>"I listed my plot and got a buyer within a week. RealPlot is fast and reliable!"</p>
@@ -351,19 +246,18 @@
 
 </main>
 
-<a class="whatsapp-float" href="https://wa.me/254769255782" target="_blank" title="Chat on WhatsApp">
-  Chat
-</a>
+<a class="whatsapp-float" href="https://wa.me/254769255782" target="_blank" title="Chat on WhatsApp">💬 Chat</a>
 
 <footer>
   &copy; <span id="year"></span> RealPlot Connect. All rights reserved.<br>
-  Website developed by <a style="color:#4CAF50" href="https://wa.me/254769255782">+254 769 255 782</a>
+  Developed by <a href="https://wa.me/254769255782">+254 769 255 782</a>
 </footer>
 
 <script>
   document.getElementById("year").textContent = new Date().getFullYear();
 </script>
 
-
+ 
+ 
 </body>
 </html>
