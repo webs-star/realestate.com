@@ -413,35 +413,45 @@ window.googleLogin = () => {
 
 
 
+<!-- LISTING GUIDELINES -->
+<div class="card" style="max-width:900px; margin:20px auto; border-left:6px solid #0056b3;">
+  
+  <div style="text-align:center; margin-bottom:15px;">
+    <img src="https://res.cloudinary.com/dwvt4e9o2/image/upload/v1752934492/ChatGPT_Image_Jul_19_2025_04_56_24_PM_jadg82.png"
+         alt="RealPlot Connect Logo"
+         style="width:140px; height:auto;" />
+    <h2 style="margin:10px 0 0; color:#0056b3;">📌 RealPlot Connect Listing Guidelines</h2>
+    <p style="font-size:14px; color:#555;">
+      Follow these rules to ensure your property appears accurately and attracts serious buyers.
+    </p>
+  </div>
 
-
-<div id="realplot-note">
-  <h2>📌 RealPlot Connect Listing Guidelines</h2>
-  <ul>
-    <li>📍 List property only when OUTSIDE(STRICLY NOT INSIDE) physically at the location for accurate GPS capture.</li>
-    <li>🗑️ Remove listings after sale/lease to avoid confusion.</li>
-    <li>🧭 Confirm your listing is correctly shown on the map and edit if needed.</li>
-    <li>📌 Location format: County SubCounty Town (no commas or dashes).</li>
-    <li>💰 Enter full price: e.g., <code>3000000</code> not <code>3M</code>.</li>
-    <li>✍️ Use bullet-style description points instead of one long paragraph.</li>
-    <li>🖼️ Upload 4 best images; describe the rest in the description.</li>
-    <li>🤝 If you are an agent, write your agent title at the bottom of the description (e.g., <em>by Relplot Connect Agents</em>).</li>
-
+  <ul style="font-size:14px; line-height:1.8; color:#333; padding-left:18px;">
+    <li>📍 <strong>Be physically OUTSIDE at the property location</strong> when listing (strictly not indoors) to capture accurate GPS coordinates.</li>
+    <li>🗑️ <strong>Remove your listing immediately</strong> once the property is sold or leased.</li>
+    <li>🧭 <strong>Verify the map location</strong> after submission and edit if necessary.</li>
+    <li>📌 <strong>Location format:</strong> County Sub-County Town (no commas or dashes).</li>
+    <li>💰 <strong>Enter full price only</strong> (e.g. <code>3000000</code>, not <code>3M</code>).</li>
+    <li>✍️ <strong>Use bullet-style descriptions</strong> instead of long paragraphs.</li>
+    <li>🖼️ <strong>Upload only 4 clear images</strong> — choose the best exterior and interior shots.</li>
+    <li>🤝 <strong>Agents:</strong> clearly state your role at the bottom of the description (e.g. <em>Listed by RealPlot Connect Agent</em>).</li>
   </ul>
+
+  <p style="background:#f0f8ff; padding:12px; border-radius:6px; font-size:13px; color:#333; margin-top:10px;">
+    ✅ Listings that follow these rules rank higher, appear on maps correctly, and receive more genuine inquiries.
+  </p>
 </div>
 
 
 
 
-<h2>📤 Upload Property Listing</h2>
+<h2 style="text-align:center; color:#0056b3;">📤 Upload Property Listing</h2>
 
-<div id="uploadSection" style="display: none;">
+<div id="uploadSection" class="card" style="display:none; max-width:700px; margin:20px auto;">
   <form id="uploadForm">
-  
 
-    <!-- Property Type Dropdown -->
     <select id="type" required>
-      <option value="">Select Property Type</option>
+      <option value="">🏠 Select Property Type</option>
       <option value="land">Land / Plots</option>
       <option value="house">House</option>
       <option value="apartment">Apartment / Flat</option>
@@ -462,49 +472,47 @@ window.googleLogin = () => {
       <option value="resort">Resort / Hotel</option>
     </select>
 
-
-  <!-- Listing Purpose Dropdown -->
     <select id="purpose" required>
-      <option value="">Select Listing Purpose</option>
+      <option value="">🎯 Select Listing Purpose</option>
       <option value="sale">For Sale</option>
       <option value="rent">For Rent</option>
       <option value="lease">For Lease</option>
       <option value="bnb">For BNB</option>
     </select>
 
-    
-    <!-- Other Inputs -->
-    <input type="text" id="location" placeholder="Location (County, Town)" required />
-    <input type="number" id="price" placeholder="Price (KES)" required />
-  <input
-  type="tel"
-  id="contact"
-  placeholder="contact -this format +254712345678"
-  pattern="^\+254\d{9}$"
-  title="Enter a valid Kenyan phone number starting with +254 and followed by 9 digits"
-  required
-/>
+    <input type="text" id="location" placeholder="📍 Location (County SubCounty Town)" required />
 
+    <input type="number" id="price" placeholder="💰 Price in KES (e.g. 25000)" required />
 
-    <textarea id="description" placeholder="Description (optional)"></textarea>
+    <input
+      type="tel"
+      id="contact"
+      placeholder="📞 Contact (+254712345678)"
+      pattern="^\+254\d{9}$"
+      title="Use format +254 followed by 9 digits"
+      required
+    />
+
+    <textarea id="description" placeholder="📝 Description (use bullet points)"></textarea>
 
     <input type="file" id="images" accept="image/*" multiple />
-    <div style="font-size: 0.9em; color: #777;">only 4 image, so choose the best</div>
+    <small style="color:#777;">📸 Maximum 4 images — choose the best</small>
+
     <div id="previewContainer"></div>
 
-    <div id="loading">⏳ Uploading...</div>
-    <button type="submit">Submit</button>
+    <div id="loading" style="display:none;">⏳ Uploading...</div>
+
+    <button type="submit" style="background:#0056b3; color:white; font-weight:bold;">
+      🚀 Submit Listing
+    </button>
   </form>
 </div>
 
 
-
-  
-
-
-<h2>🏘️ All Listings</h2>
+<h2 style="text-align:center; color:#0056b3; margin-top:40px;">
+  🏘️ All Active Listings on RealPlot Connect
+</h2>
 <div id="listings"></div>
-
 
 
 
