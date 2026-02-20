@@ -657,11 +657,12 @@ form.addEventListener("submit", async (e) => {
     return;
   }
 
-  // For Top / Boosted: redirect to Paystack
-  const paystackLink = "https://paystack.shop/pay/4pgenldoyc"; // could select link based on price
-  // Save listing temporarily in sessionStorage until payment completes
-  sessionStorage.setItem("pendingTopListing", JSON.stringify(listingData));
+  
 
+// For Top / Boosted: redirect to Paystack
+const paystackLink = "https://paystack.shop/pay/4pgenldoyc"; // replace with your link
+localStorage.setItem("pendingTopListing", JSON.stringify(listingData));
+  
   // Redirect with ref
   window.location.href = `${paystackLink}?ref=${Date.now()}`; 
 });
@@ -780,27 +781,35 @@ const donateBtn = document.getElementById('show-mpesa');
 
 
 
-
-
 window.addEventListener("load", async () => {
   const urlParams = new URLSearchParams(window.location.search);
-  const ref = urlParams.get("ref");
+  const ref = urlParams.get("reference"); // Paystack returns ?reference=...
 
-  if(ref && sessionStorage.getItem("pendingTopListing")) {
-    const listingData = JSON.parse(sessionStorage.getItem("pendingTopListing"));
+  const pendingListing = localStorage.getItem("pendingTopListing");
 
-    // Save to topListings
-    await db.ref("topListings").push(listingData);
+  if (ref && pendingListing) {
+    const listingData = JSON.parse(pendingListing);
 
-    // Clear temp storage & remove ref from URL
-    sessionStorage.removeItem("pendingTopListing");
-    const cleanUrl = window.location.href.split("?")[0];
-    window.history.replaceState({}, document.title, cleanUrl);
+    try {
+      // Save to topListings in Firebase
+      await db.ref("topListings").push(listingData);
 
-    alert("✅ Top / Boosted listing uploaded successfully!");
+      // Clear localStorage
+      localStorage.removeItem("pendingTopListing");
+
+      // Remove reference from URL without reloading
+      const cleanUrl = window.location.href.split("?")[0];
+      window.history.replaceState({}, document.title, cleanUrl);
+
+      alert("✅ Top / Boosted listing uploaded successfully!");
+    } catch (err) {
+      console.error("Error saving top listing:", err);
+      alert("❌ Something went wrong while saving your listing. Please try again.");
+    }
   }
 });
-  
+
+
 </script>
 </body>
 </html>
