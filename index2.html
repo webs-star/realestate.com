@@ -150,29 +150,33 @@
       display: none;
     }
   
-/* Listing cards container */
-/* Top / Free Listings containers */
+
 #topListingsDiv,
 #freeListingsDiv {
   display: grid;
   grid-template-columns: repeat(2, 1fr); /* 2 columns */
-  gap: 25px; /* space between cards */
-  justify-items: center; /* center cards horizontally in each column */
+  gap: 10px; /* smaller gap, enlarges cards */
+  justify-items: center; /* center cards in each column */
   margin-top: 20px;
 }
 
-/* Make the cards take full width of the grid cell */
 .listing-card {
-  width: 100%; /* fills grid column */
-  max-width: 450px; /* optional: keeps card reasonable size */
+  width: 100%;      /* fills the grid cell */
+  max-width: 500px; /* slightly larger max width */
   padding: 15px;
-  flex-direction: column;
   border-radius: 15px;
   box-shadow: 0 6px 20px rgba(0,0,0,0.15);
   background: #fff;
   transition: transform 0.3s ease;
 }
 
+.image-column img {
+  width: 100%;
+  height: 320px;  /* larger images */
+  object-fit: cover;
+  border-radius: 12px;
+  transition: opacity 0.5s ease-in-out, transform 0.3s ease;
+}
 
     
 .listing-card:hover {
@@ -187,13 +191,7 @@
   margin-bottom: 12px;
 }
 
-.image-column img {
-  width: 100%;
-  height: 280px;          /* bigger image */
-  object-fit: cover;
-  border-radius: 12px;
-  transition: opacity 0.5s ease-in-out, transform 0.3s ease;
-}
+
 .image-column img:hover {
   transform: scale(1.02);
 }
