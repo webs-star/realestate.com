@@ -473,6 +473,14 @@ window.googleLogin = () => {
 <div id="uploadSection" class="card" style="display:none; max-width:700px; margin:20px auto;">
   <form id="uploadForm">
 
+<!-- Add in your upload form -->
+<select id="listingLevel" required>
+  <option value="">📌 Select Listing Level</option>
+  <option value="free">Free Listing</option>
+  <option value="top">Top / Boosted Listing</option>
+</select>
+
+    
     <select id="type" required>
       <option value="">🏠 Select Property Type</option>
       <option value="land">Land / Plots</option>
@@ -599,46 +607,39 @@ window.googleLogin = () => {
     });
   });
 
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    if (!currentUserLatLng) return alert("⚠️ Location not available.");
-const files = [...imageInput.files];
-if (files.length > 4) {
-  alert("You can only upload up to 4 images.");
-  return;
-}
-
-loading.style.display = "block";
-const imageURLs = [];
 
 
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  if (!currentUserLatLng) return alert("⚠️ Location not available.");
 
+  const files = [...imageInput.files];
+  if (files.length > 4) return alert("⚠️ Max 4 images allowed.");
 
-
-  // ✅ Contact validation
   const rawContact = document.getElementById("contact").value.trim();
-  const validContactPattern = /^\+254\d{9}$/;
+  if (!/^\+254\d{9}$/.test(rawContact)) return alert("❌ Enter a valid Kenyan number");
 
-  if (!validContactPattern.test(rawContact)) {
-    alert("❌ Enter a valid Kenyan number starting with +254 followed by 9 digits.");
-    loading.style.display = "none"; // Hide loader on error
-    return;
-  }
+  const listingLevel = document.getElementById("listingLevel").value;
 
+  const listingData = {
+    type: document.getElementById("type").value,
+    purpose: document.getElementById("purpose").value,
+    location: document.getElementById("location").value,
+    price: parseInt(document.getElementById("price").value),
+    contact: rawContact,
+    description: document.getElementById("description").value,
+    images: [],
+    lat: currentUserLatLng.lat,
+    lng: currentUserLatLng.lng,
+    userId,
+    timestamp: Date.now(),
+    lastConfirmed: Date.now(),
+    status: "active",
+    level: listingLevel
+  };
 
-
-
-
-
-
-
-
-
-
-
-    
-
-if (files.length > 0) {
+  // Upload images to Cloudinary
+  const imageURLs = [];
   for (const file of files) {
     const formData = new FormData();
     formData.append("file", file);
@@ -646,150 +647,126 @@ if (files.length > 0) {
     const res = await axios.post(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, formData);
     imageURLs.push(res.data.secure_url);
   }
-}
+  listingData.images = imageURLs;
 
-
-const data = {
-  type: document.getElementById("type").value,
-  purpose: document.getElementById("purpose").value,
-  location: document.getElementById("location").value,
-  price: parseInt(document.getElementById("price").value),
-  contact: rawContact,
-  description: document.getElementById("description").value,
-  images: imageURLs,
-  lat: currentUserLatLng.lat,
-  lng: currentUserLatLng.lng,
-  userId,
-  timestamp: Date.now(),
-
-  // ✅ NEW FIELDS
-  lastConfirmed: Date.now(),
-  status: "active"
-};
-
-
-    await db.ref("listings").push(data);
+  if(listingLevel === "free") {
+    await db.ref("listings").push(listingData);
+    alert("✅ Free listing uploaded!");
     form.reset();
     previewContainer.innerHTML = "";
-    loading.style.display = "none";
-    alert("✅ Listing uploaded!");
-  });
-
-
-db.ref("listings").on("value", (snap) => {
-
-  const THIRTY_DAYS = 30 * 24 * 60 * 60 * 1000;
-  const now = Date.now();
-
-  const listings = snap.val() || {};
-  listingsDiv.innerHTML = "";
-
-  const sortedListings = Object.entries(listings)
-    .sort((a, b) => (b[1].timestamp || 0) - (a[1].timestamp || 0));
-
-  for (const [id, item] of sortedListings) {
-
-    const lastConfirmed = item.lastConfirmed || item.timestamp || now;
-
-    // ✅ AUTO EXPIRE AFTER 30 DAYS
-    if (now - lastConfirmed > THIRTY_DAYS) {
-      continue;
-    }
-
-    const daysAgo = Math.floor((now - lastConfirmed) / (1000 * 60 * 60 * 24));
-
-    const div = document.createElement("div");
-    div.className = "listing-card";
-
-    // IMAGE
-    const imageColumn = document.createElement("div");
-    imageColumn.className = "image-column";
-
-    if (item.images && item.images.length > 0) {
-      const img = document.createElement("img");
-      img.src = item.images[0];
-      imageColumn.appendChild(img);
-
-      let index = 0;
-      setInterval(() => {
-        index = (index + 1) % item.images.length;
-        img.src = item.images[index];
-      }, 5000);
-    }
-
-    div.appendChild(imageColumn);
-
-    // INFO
-    const info = document.createElement("div");
-    info.innerHTML = `
-      <h4><b>${item.type}</b> – <b>KES ${item.price}</b></h4>
-      <p><strong>Purpose:</strong> ${item.purpose || "N/A"}</p>
-      <p><strong>Location:</strong> ${item.location}</p>
-      <p><strong>Contact:</strong> ${item.contact}</p>
-      <p style="color:#0aa83f; font-size:14px;">
-        ✅ Last confirmed: ${daysAgo} day(s) ago
-      </p>
-      <ul class="description">
-        ${(item.description || "").split("\n").map(line => `<li>${line}</li>`).join("")}
-      </ul>
-    `;
-    div.appendChild(info);
-
-    // ✅ OWNER CONTROLS
-    if (item.userId === userId) {
-
-      // CONFIRM BUTTON
-      const confirmBtn = document.createElement("button");
-      confirmBtn.textContent = "✅ Confirm Still Available";
-      confirmBtn.style.background = "#0aa83f";
-      confirmBtn.style.color = "white";
-      confirmBtn.style.marginBottom = "8px";
-      confirmBtn.onclick = () => {
-        db.ref("listings/" + id).update({
-          lastConfirmed: Date.now()
-        }).then(() => {
-          alert("✅ Property confirmed for another 30 days!");
-        });
-      };
-
-      div.appendChild(confirmBtn);
-
-      // EDIT BUTTON
-      const editBtn = document.createElement("button");
-      editBtn.textContent = "✏️ Edit";
-      editBtn.className = "edit-btn";
-      editBtn.onclick = () => {
-        const newType = prompt("Edit type:", item.type);
-        const newPrice = prompt("Edit price:", item.price);
-        const newLocation = prompt("Edit location:", item.location);
-        const newContact = prompt("Edit contact:", item.contact);
-
-        if (newType && newPrice && newLocation && newContact) {
-          db.ref("listings/" + id).update({
-            type: newType,
-            price: parseInt(newPrice),
-            location: newLocation,
-            contact: newContact
-          });
-        }
-      };
-
-      const delBtn = document.createElement("button");
-      delBtn.textContent = "🗑️ Delete";
-      delBtn.className = "delete-btn";
-      delBtn.onclick = () => {
-        if (confirm("Delete this listing?")) {
-          db.ref("listings/" + id).remove();
-        }
-      };
-
-      div.appendChild(editBtn);
-      div.appendChild(delBtn);
-    }
-
-    listingsDiv.appendChild(div);
+    return;
   }
+
+  // For Top / Boosted: redirect to Paystack
+  const paystackLink = "https://paystack.shop/pay/4pgenldoyc"; // could select link based on price
+  // Save listing temporarily in sessionStorage until payment completes
+  sessionStorage.setItem("pendingTopListing", JSON.stringify(listingData));
+
+  // Redirect with ref
+  window.location.href = `${paystackLink}?ref=${Date.now()}`; 
 });
+
+  
+  
+const renderListings = (nodeRef, container, isTop=false) => {
+  nodeRef.on("value", (snap) => {
+    const now = Date.now();
+    const THIRTY_DAYS = 30 * 24 * 60 * 60 * 1000;
+    const listings = snap.val() || {};
+    container.innerHTML = "";
+
+    const sortedListings = Object.entries(listings).sort((a, b) => (b[1].timestamp || 0) - (a[1].timestamp || 0));
+
+    for (const [id, item] of sortedListings) {
+      const lastConfirmed = item.lastConfirmed || item.timestamp || now;
+      if (now - lastConfirmed > THIRTY_DAYS) continue;
+
+      const daysAgo = Math.floor((now - lastConfirmed) / (1000*60*60*24));
+      const div = document.createElement("div");
+      div.className = "listing-card";
+
+      // Image carousel
+      const imageColumn = document.createElement("div");
+      imageColumn.className = "image-column";
+      if (item.images && item.images.length > 0) {
+        const img = document.createElement("img");
+        img.src = item.images[0];
+        imageColumn.appendChild(img);
+        let index = 0;
+        setInterval(() => { index = (index+1)%item.images.length; img.src = item.images[index]; }, 5000);
+      }
+      div.appendChild(imageColumn);
+
+      // Listing info
+      info = document.createElement("div");
+      info.innerHTML = `
+        <h4>
+          ${isTop ? "⭐ Top / Boosted" : ""} <b>${item.type}</b> – <b>KES ${item.price}</b>
+        </h4>
+        <p><strong>Purpose:</strong> ${item.purpose || "N/A"}</p>
+        <p><strong>Location:</strong> ${item.location}</p>
+        <p><strong>Contact:</strong> ${item.contact}</p>
+        <p style="color:#0aa83f; font-size:14px;">
+          ✅ Last confirmed: ${daysAgo} day(s) ago
+        </p>
+        <ul class="description">
+          ${(item.description || "").split("\n").map(line => `<li>${line}</li>`).join("")}
+        </ul>
+      `;
+      div.appendChild(info);
+
+      // Owner controls
+      if (item.userId === userId) {
+        const confirmBtn = document.createElement("button");
+        confirmBtn.textContent = "✅ Confirm Still Available";
+        confirmBtn.style.background = "#0aa83f";
+        confirmBtn.style.color = "white";
+        confirmBtn.style.marginBottom = "8px";
+        confirmBtn.onclick = () => {
+          db.ref((isTop ? "topListings/" : "listings/") + id).update({ lastConfirmed: Date.now() })
+            .then(()=> alert("✅ Property confirmed for another 30 days!"));
+        };
+        div.appendChild(confirmBtn);
+
+        const editBtn = document.createElement("button");
+        editBtn.textContent = "✏️ Edit";
+        editBtn.className = "edit-btn";
+        editBtn.onclick = () => {
+          const newType = prompt("Edit type:", item.type);
+          const newPrice = prompt("Edit price:", item.price);
+          const newLocation = prompt("Edit location:", item.location);
+          const newContact = prompt("Edit contact:", item.contact);
+          if(newType && newPrice && newLocation && newContact){
+            db.ref((isTop ? "topListings/" : "listings/") + id).update({
+              type: newType,
+              price: parseInt(newPrice),
+              location: newLocation,
+              contact: newContact
+            });
+          }
+        };
+        const delBtn = document.createElement("button");
+        delBtn.textContent = "🗑️ Delete";
+        delBtn.className = "delete-btn";
+        delBtn.onclick = () => {
+          if(confirm("Delete this listing?")){
+            db.ref((isTop ? "topListings/" : "listings/") + id).remove();
+          }
+        };
+        div.appendChild(editBtn);
+        div.appendChild(delBtn);
+      }
+
+      container.appendChild(div);
+    }
+  });
+};
+
+// Render Free Listings
+renderListings(db.ref("listings"), document.getElementById("listings"), false);
+
+// Render Top Listings (optional: can render in a separate container)
+renderListings(db.ref("topListings"), document.getElementById("listings"), true);
 
 
 const donateBtn = document.getElementById('show-mpesa');
@@ -800,6 +777,29 @@ const donateBtn = document.getElementById('show-mpesa');
     mpesaNumber.style.display = isVisible ? 'none' : 'block';
     donateBtn.textContent = isVisible ? 'Donate via M-Pesa' : 'Thank You!';
   });
+
+
+
+
+
+window.addEventListener("load", async () => {
+  const urlParams = new URLSearchParams(window.location.search);
+  const ref = urlParams.get("ref");
+
+  if(ref && sessionStorage.getItem("pendingTopListing")) {
+    const listingData = JSON.parse(sessionStorage.getItem("pendingTopListing"));
+
+    // Save to topListings
+    await db.ref("topListings").push(listingData);
+
+    // Clear temp storage & remove ref from URL
+    sessionStorage.removeItem("pendingTopListing");
+    const cleanUrl = window.location.href.split("?")[0];
+    window.history.replaceState({}, document.title, cleanUrl);
+
+    alert("✅ Top / Boosted listing uploaded successfully!");
+  }
+});
   
 </script>
 </body>
