@@ -151,24 +151,26 @@
     }
   
 
+
 #topListingsDiv,
 #freeListingsDiv {
   display: grid;
-  grid-template-columns: repeat(2, 1fr); /* 2 columns */
-  gap: 10px; /* smaller gap, enlarges cards */
-  justify-items: center; /* center cards in each column */
+  grid-template-columns: repeat(2, 1fr);
+  gap: 3px;           /* small real gap */
   margin-top: 20px;
 }
 
 .listing-card {
-  width: 100%;      /* fills the grid cell */
-  max-width: 500px; /* slightly larger max width */
+  width: 100%;        /* fill entire column */
+  max-width: 100%;    /* REMOVE fixed width restriction */
   padding: 15px;
   border-radius: 15px;
   box-shadow: 0 6px 20px rgba(0,0,0,0.15);
   background: #fff;
   transition: transform 0.3s ease;
 }
+
+    
 
 .image-column img {
   width: 100%;
