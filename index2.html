@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <!-- Character Set and Viewport -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Google Site Verification (keep if needed) -->
+  <meta name="google-site-verification" content="ZuK2pvozDS96vm0_IRjSYEsTqSdC8FJCIgJdAitGf0U" />
+
+
+<!-- Title and SEO -->
+<title>RealPlot Connect – Free Property Listing Portal for Landlords in Kenya</title>
+
+<meta name="description" content="Landlords and landowners in Kenya can list plots, land, and rental properties for free on RealPlot Connect. Manage listings, add map locations, and attract real buyers with voice-guided map access." />
+
+<meta name="keywords" content="free property listing Kenya, landlord portal Kenya, list rental property Kenya, post plots for sale Kenya, list land for free, real estate owners Kenya, property management Kenya, rent out house Kenya, list rental houses Kenya, sell plot Kenya, landowner listing Kenya, realplot connect, real estate map Kenya" />
+
+<meta name="author" content="RealPlot Connect by Webs Star" />
+<meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+<link rel="canonical" href="https://webs-star.github.io/realestate.com/realplot" />
+
+<!-- Open Graph / Social Preview -->
+<meta property="og:title" content="RealPlot Connect – Free Listing Portal for Landlords & Landowners in Kenya" />
+<meta property="og:description" content="Join RealPlot Connect to list your plots, land, or rentals for free. Manage your properties on a live map and connect directly with genuine buyers across Kenya." />
+<meta property="og:url" content="https://webs-star.github.io/realestate.com/realplot" />
+<meta property="og:type" content="website" />
+<meta property="og:locale" content="en_KE" />
+<meta property="og:image" content="https://your-site-preview-image-link.jpg" />
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="RealPlot Kenya – Free Property Listing for Landlords & Landowners" />
+<meta name="twitter:description" content="Landlords in Kenya can post rentals, plots, and land for free. RealPlot helps you manage your listings and get genuine buyers faster." />
+<meta name="twitter:image" content="https://your-site-preview-image-link.jpg" />
+
+<!-- Geo Tags for Local SEO -->
+<meta name="geo.region" content="KE" />
+<meta name="geo.placename" content="Kenya" />
+<meta name="geo.position" content="-1.2921;36.8219" />
+<meta name="ICBM" content="-1.2921,36.8219" />
+
+<!-- Schema.org JSON-LD for Rich Results -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "RealPlot Connect",
+  "url": "https://webs-star.github.io/realestate.com/realplot",
+  "description": "Free property listing portal in Kenya for landlords and landowners. List plots, land, and rentals on RealPlot Connect with real-time map location and voice guidance.",
+  "publisher": {
+    "@type": "Organization",
+    "name": "Webs Star"
+  },
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": "https://webs-star.github.io/realestate.com/realplot?q={search_term_string}",
+    "query-input": "required name=search_term_string"
+  },
+  "areaServed": "KE",
+  "inLanguage": "en"
+}
+</script>
+
+
+
+
+  
+  <!-- Firebase (for listings and auth) -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+
+
+  <!-- Cloudinary (media upload) + Axios -->
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+  <!-- Leaflet Maps + Routing -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css" />
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.min.js"></script>
+
+  <!-- Favicon -->
+  <link rel="icon" href="/favicon.ico" />
+
+
+
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f4f6f9;
+      margin: 0;
+      padding: 20px;
+    }
+    h2 {
+      color: #2c3e50;
+      text-align: center;
+      margin-bottom: 15px;
+    }
+    form {
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      max-width: 700px;
+      margin: auto;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    form input, form select, form textarea, form button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      font-size: 14px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+    form button {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    form button:hover {
+      background-color: #0056b3;
+    }
+
+/* Upload preview thumbnails */
+#previewContainer img {
+  width: 180px;          /* bigger preview */
+  height: 180px;
+  object-fit: cover;
+  border-radius: 10px;
+  margin: 5px;
+  border: 1px solid #ccc;
+  transition: transform 0.3s ease;
+}
+#previewContainer img:hover {
+  transform: scale(1.05);
+}
+
+
+
+    
+    #loading {
+      text-align: center;
+      font-weight: bold;
+      color: #ff6600;
+      margin-top: 10px;
+      display: none;
+    }
+  
+/* Listing cards container */
+#listings {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 25px;
+  margin-top: 40px;
+}
+
+/* Listing cards */
+.listing-card {
+  width: 450px;           /* wider card */
+  padding: 15px;
+  flex-direction: column;
+  border-radius: 15px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+  background: #fff;
+  transition: transform 0.3s ease;
+}
+.listing-card:hover {
+  transform: translateY(-5px);
+}
+
+/* Image column */
+.image-column {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-bottom: 12px;
+}
+
+.image-column img {
+  width: 100%;
+  height: 280px;          /* bigger image */
+  object-fit: cover;
+  border-radius: 12px;
+  transition: opacity 0.5s ease-in-out, transform 0.3s ease;
+}
+.image-column img:hover {
+  transform: scale(1.02);
+}
+
+/* Text inside cards */
+.listing-card h4 {
+  font-size: 18px;       /* bigger title */
+  margin-bottom: 6px;
+}
+.listing-card p {
+  font-size: 16px;       /* bigger details */
+  margin: 3px 0;
+}
+ul.description {
+  font-size: 15px;       /* larger description text */
+  max-height: 250px;     /* taller scroll area */
+  overflow-y: auto;
+  padding: 8px 12px;
+  background: #f9f9f9;
+  border-radius: 8px;
+  margin: 8px 0;
+  line-height: 1.5em;
+}
+
+/* Edit/Delete buttons */
+.listing-card button {
+  font-size: 15px;
+  padding: 10px 14px;
+  border-radius: 8px;
+}
+.edit-btn {
+  background: #28a745;
+  color: white;
+  margin-right: 8px;
+}
+.delete-btn {
+  background: #dc3545;
+  color: white;
+}
+
+
+
+
+
+
+
+    
+#realplot-note {
+  background-color: #f0f8ff;
+  border-left: 6px solid #007acc;
+  padding: 20px 25px;
+  margin: 30px auto;
+  max-width: 800px;
+  font-family: 'Segoe UI', sans-serif;
+  font-size: 16px;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+#realplot-note h2 {
+  font-size: 22px;
+  color: #005999;
+  margin-bottom: 15px;
+}
+#realplot-note ul {
+  padding-left: 20px;
+}
+#realplot-note li {
+  margin-bottom: 10px;
+  line-height: 1.5em;
+}
+
+
+ #authSection {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    background-color: #f9f9f9;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    max-width: 300px;
+    font-family: Arial, sans-serif;
+  }
+
+  #authSection input {
+    padding: 12px;
+    font-size: 18px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+  }
+
+  #authSection button {
+    padding: 12px;
+    font-size: 18px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+
+  #authSection button:hover {
+    background-color: #45a049;
+  }
+
+    
+    
+    }
+
+
+
+
+
+
+    
+  </style>
+</head>
+
+<body>
+
+<script>
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDLTAd2u0IlhA4Gm4-0tTSzLUDHFYj045g",
+  authDomain: "realestate-afbe6.firebaseapp.com",
+  databaseURL: "https://realestate-afbe6-default-rtdb.firebaseio.com",
+  projectId: "realestate-afbe6",
+  storageBucket: "realestate-afbe6.appspot.com",
+  messagingSenderId: "202970291965",
+  appId: "1:202970291965:web:baaf253d6c9a8685c5e894"
+};
+firebase.initializeApp(firebaseConfig);
+
+
+
+
+const db = firebase.database();
+
+
+
+
+firebase.auth().onAuthStateChanged(user => {
+  if (user) {
+    // Show upload section
+    document.getElementById("uploadSection").style.display = "block";
+    document.getElementById("authSection").style.display = "none";
+    userId = user.uid;
+
+    // Optional: Scroll to upload section
+    document.getElementById("uploadSection").scrollIntoView({ behavior: "smooth" });
+
+  } else {
+    // Show login section
+    document.getElementById("uploadSection").style.display = "none";
+    document.getElementById("authSection").style.display = "block";
+    userId = null;
+  }
+});
+
+  
+
+  
+
+
+  // 🔒 Make functions global
+  
+window.googleLogin = () => {
+  const provider = new firebase.auth.GoogleAuthProvider();
+  firebase.auth().signInWithPopup(provider)
+    .then(result => {
+      alert("Logged in as " + result.user.email);
+      // Show the upload section without waiting for onAuthStateChanged
+      
+    })
+    .catch(err => {
+      alert("Login failed: " + err.message);
+    });
+};
+
+ 
+
+  window.login = () => {
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+  firebase.auth().signInWithEmailAndPassword(email, password)
+    .then(userCredential => {
+      alert("Logged in as: " + userCredential.user.email);
+      // Show the upload section manually without reloading
+      
+    })
+    .catch(error => {
+      alert("Login error: " + error.message);
+    });
+};
+
+  
+
+  window.register = () => {
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+    firebase.auth().createUserWithEmailAndPassword(email, password)
+      .then(userCredential => {
+        alert("User registered: " + userCredential.user.email);
+      })
+      .catch(error => {
+        alert("Error: " + error.message);
+      });
+  };
+
+  window.logout = () => {
+    firebase.auth().signOut().then(() => {
+      alert("Logged out");
+    });
+  };
+
+  
+</script>
+
+
+
+
+
+<div id="authSection">
+  <input type="email" id="email" placeholder="Email" />
+  <input type="password" id="password" placeholder="Password" />
+  <button onclick="login()">Login</button>
+  <button onclick="register()">Register</button>
+  <button onclick="logout()">Logout</button>
+  <button onclick="googleLogin()">Login with Google</button>
+</div>
+
+
+
+
+<!-- LISTING GUIDELINES -->
+<div class="card" style="max-width:900px; margin:25px auto; border-left:6px solid #0056b3; padding:20px;">
+  
+  <div style="text-align:center; margin-bottom:20px;">
+    <img src="https://res.cloudinary.com/dwvt4e9o2/image/upload/v1752934492/ChatGPT_Image_Jul_19_2025_04_56_24_PM_jadg82.png"
+         alt="RealPlot Connect Logo"
+         style="width:160px; height:auto;" />
+
+    <h2 style="margin:14px 0 6px; color:#0056b3; font-size:26px;">
+      📌 RealPlot Connect Listing Guidelines
+    </h2>
+
+    <p style="font-size:17px; color:#555; max-width:700px; margin:0 auto;">
+      Follow these rules to ensure your property appears accurately and attracts serious buyers.
+    </p>
+  </div>
+
+  <ul style="font-size:17px; line-height:1.9; color:#333; padding-left:22px;">
+    <li>📍 <strong>Be physically OUTSIDE at the property location</strong> (strictly not indoors) to capture accurate GPS coordinates.</li>
+    <li>🗑️ <strong>Remove your listing immediately</strong> once the property is sold or leased.</li>
+    <li>🧭 <strong>Confirm the map location</strong> after submission and edit if necessary.</li>
+    <li>📌 <strong>Location format:</strong> County Sub-County Town (no commas or dashes).</li>
+    <li>💰 <strong>Enter the full price</strong> (e.g. <code style="font-size:16px;">3000000</code>, not <code style="font-size:16px;">3M</code>).</li>
+    <li>✍️ <strong>Use bullet-style descriptions</strong> instead of long paragraphs.</li>
+    <li>🖼️ <strong>Upload only 4 clear images</strong> — choose the best exterior and interior shots.</li>
+    <li>🤝 <strong>Agents:</strong> state your role clearly at the bottom (e.g. <em>Listed by RealPlot Connect Agent</em>).</li>
+  </ul>
+
+  <p style="
+      background:#f0f8ff;
+      padding:14px;
+      border-radius:6px;
+      font-size:16px;
+      color:#333;
+      margin-top:15px;
+    ">
+    ✅ Listings that follow these rules rank higher, appear correctly on the map, and receive more genuine inquiries.
+  </p>
+</div>
+
+
+<h2 style="text-align:center; color:#0056b3;">📤 Upload Property Listing</h2>
+
+<div id="uploadSection" class="card" style="display:none; max-width:700px; margin:20px auto;">
+  <form id="uploadForm">
+
+    <select id="type" required>
+      <option value="">🏠 Select Property Type</option>
+      <option value="land">Land / Plots</option>
+      <option value="house">House</option>
+      <option value="apartment">Apartment / Flat</option>
+      <option value="bungalow">Bungalow</option>
+      <option value="maisonette">Maisonette</option>
+      <option value="bedsitter">Bedsitter</option>
+      <option value="single room">Single Room</option>
+      <option value="shop">Shop / Stall</option>
+      <option value="office">Office Space</option>
+      <option value="godown">Godown / Warehouse</option>
+      <option value="commercial building">Commercial Building</option>
+      <option value="leased">Leased Property</option>
+      <option value="rental">Rental Unit</option>
+      <option value="hostel">Student Hostel</option>
+      <option value="farm">Farm Land</option>
+      <option value="vacant land">Vacant Land</option>
+      <option value="industrial">Industrial Property</option>
+      <option value="resort">Resort / Hotel</option>
+    </select>
+
+    <select id="purpose" required>
+      <option value="">🎯 Select Listing Purpose</option>
+      <option value="sale">For Sale</option>
+      <option value="rent">For Rent</option>
+      <option value="lease">For Lease</option>
+      <option value="bnb">For BNB</option>
+    </select>
+
+    <input type="text" id="location" placeholder="📍 Location (County SubCounty Town)" required />
+
+    <input type="number" id="price" placeholder="💰 Price in KES (e.g. 25000)" required />
+
+    <input
+      type="tel"
+      id="contact"
+      placeholder="📞 Contact (+254712345678)"
+      pattern="^\+254\d{9}$"
+      title="Use format +254 followed by 9 digits"
+      required
+    />
+
+    <textarea id="description" placeholder="📝 Description (use bullet points)"></textarea>
+
+    <input type="file" id="images" accept="image/*" multiple />
+    <small style="color:#777;">📸 Maximum 4 images — choose the best</small>
+
+    <div id="previewContainer"></div>
+
+    <div id="loading" style="display:none;">⏳ Uploading...</div>
+
+    <button type="submit" style="background:#0056b3; color:white; font-weight:bold;">
+      🚀 Submit Listing
+    </button>
+  </form>
+</div>
+
+
+
+
+<!-- DONATE SECTION FOR OWNERS -->
+<section style="text-align:center; margin:60px 0; background:#f9f9f9; padding:40px 20px; border-radius:12px; box-shadow:0 4px 10px rgba(0,0,0,0.05);">
+  <h2 style="color:#4CAF50; margin-bottom:20px;">💚 Support RealPlot Connect</h2>
+  <p>Thank you for listing your property with us! <br>If your property is rented or sold successfully,<br> consider donating(Any amount) to help us keep RealPlot <br>running and improving for all owners.</p>
+  
+  <button id="show-mpesa" 
+          style="background:#FFA500; color:white; padding:14px 28px; border:none; border-radius:10px; font-size:17px; cursor:pointer; margin-top:20px; font-weight:600; transition:.3s;">
+    Donate via M-Pesa
+  </button>
+  
+  <p id="mpesa-number" style="margin-top:15px; font-weight:bold; font-size:18px; display:none; color:#333;">
+    +254 769 255 782
+  </p>
+</section>
+
+
+  
+<h2 style="text-align:center; color:#0056b3; margin-top:40px;">
+  🏘️ All Active Listings on RealPlot Connect
+</h2>
+<div id="listings"></div>
+
+
+
+
+
+
+<script>
+  
+
+  const cloudName = "dwvt4e9o2";
+  const uploadPreset = "unsigned_upload";
+
+  const form = document.getElementById("uploadForm");
+  const imageInput = document.getElementById("images");
+  const previewContainer = document.getElementById("previewContainer");
+  const listingsDiv = document.getElementById("listings");
+  const loading = document.getElementById("loading");
+
+  let currentUserLatLng = null;
+  let userId = localStorage.getItem("realplot_user_id");
+  if (!userId) {
+    userId = "user_" + Date.now();
+    localStorage.setItem("realplot_user_id", userId);
+  }
+
+  navigator.geolocation.getCurrentPosition(pos => {
+    currentUserLatLng = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+  });
+
+  imageInput.addEventListener("change", () => {
+    const files = [...imageInput.files];
+    previewContainer.innerHTML = "";
+    if (files.length > 4) {
+      alert("⚠️ You can upload up to 4 images.");
+      imageInput.value = "";
+      return;
+    }
+    files.forEach(file => {
+      const img = document.createElement("img");
+      img.src = URL.createObjectURL(file);
+      previewContainer.appendChild(img);
+    });
+  });
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (!currentUserLatLng) return alert("⚠️ Location not available.");
+const files = [...imageInput.files];
+if (files.length > 4) {
+  alert("You can only upload up to 4 images.");
+  return;
+}
+
+loading.style.display = "block";
+const imageURLs = [];
+
+
+
+
+
+  // ✅ Contact validation
+  const rawContact = document.getElementById("contact").value.trim();
+  const validContactPattern = /^\+254\d{9}$/;
+
+  if (!validContactPattern.test(rawContact)) {
+    alert("❌ Enter a valid Kenyan number starting with +254 followed by 9 digits.");
+    loading.style.display = "none"; // Hide loader on error
+    return;
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+    
+
+if (files.length > 0) {
+  for (const file of files) {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", uploadPreset);
+    const res = await axios.post(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, formData);
+    imageURLs.push(res.data.secure_url);
+  }
+}
+
+
+const data = {
+  type: document.getElementById("type").value,
+  purpose: document.getElementById("purpose").value,
+  location: document.getElementById("location").value,
+  price: parseInt(document.getElementById("price").value),
+  contact: rawContact,
+  description: document.getElementById("description").value,
+  images: imageURLs,
+  lat: currentUserLatLng.lat,
+  lng: currentUserLatLng.lng,
+  userId,
+  timestamp: Date.now(),
+
+  // ✅ NEW FIELDS
+  lastConfirmed: Date.now(),
+  status: "active"
+};
+
+
+    await db.ref("listings").push(data);
+    form.reset();
+    previewContainer.innerHTML = "";
+    loading.style.display = "none";
+    alert("✅ Listing uploaded!");
+  });
+
+
+db.ref("listings").on("value", (snap) => {
+
+  const THIRTY_DAYS = 30 * 24 * 60 * 60 * 1000;
+  const now = Date.now();
+
+  const listings = snap.val() || {};
+  listingsDiv.innerHTML = "";
+
+  const sortedListings = Object.entries(listings)
+    .sort((a, b) => (b[1].timestamp || 0) - (a[1].timestamp || 0));
+
+  for (const [id, item] of sortedListings) {
+
+    const lastConfirmed = item.lastConfirmed || item.timestamp || now;
+
+    // ✅ AUTO EXPIRE AFTER 30 DAYS
+    if (now - lastConfirmed > THIRTY_DAYS) {
+      continue;
+    }
+
+    const daysAgo = Math.floor((now - lastConfirmed) / (1000 * 60 * 60 * 24));
+
+    const div = document.createElement("div");
+    div.className = "listing-card";
+
+    // IMAGE
+    const imageColumn = document.createElement("div");
+    imageColumn.className = "image-column";
+
+    if (item.images && item.images.length > 0) {
+      const img = document.createElement("img");
+      img.src = item.images[0];
+      imageColumn.appendChild(img);
+
+      let index = 0;
+      setInterval(() => {
+        index = (index + 1) % item.images.length;
+        img.src = item.images[index];
+      }, 5000);
+    }
+
+    div.appendChild(imageColumn);
+
+    // INFO
+    const info = document.createElement("div");
+    info.innerHTML = `
+      <h4><b>${item.type}</b> – <b>KES ${item.price}</b></h4>
+      <p><strong>Purpose:</strong> ${item.purpose || "N/A"}</p>
+      <p><strong>Location:</strong> ${item.location}</p>
+      <p><strong>Contact:</strong> ${item.contact}</p>
+      <p style="color:#0aa83f; font-size:14px;">
+        ✅ Last confirmed: ${daysAgo} day(s) ago
+      </p>
+      <ul class="description">
+        ${(item.description || "").split("\n").map(line => `<li>${line}</li>`).join("")}
+      </ul>
+    `;
+    div.appendChild(info);
+
+    // ✅ OWNER CONTROLS
+    if (item.userId === userId) {
+
+      // CONFIRM BUTTON
+      const confirmBtn = document.createElement("button");
+      confirmBtn.textContent = "✅ Confirm Still Available";
+      confirmBtn.style.background = "#0aa83f";
+      confirmBtn.style.color = "white";
+      confirmBtn.style.marginBottom = "8px";
+      confirmBtn.onclick = () => {
+        db.ref("listings/" + id).update({
+          lastConfirmed: Date.now()
+        }).then(() => {
+          alert("✅ Property confirmed for another 30 days!");
+        });
+      };
+
+      div.appendChild(confirmBtn);
+
+      // EDIT BUTTON
+      const editBtn = document.createElement("button");
+      editBtn.textContent = "✏️ Edit";
+      editBtn.className = "edit-btn";
+      editBtn.onclick = () => {
+        const newType = prompt("Edit type:", item.type);
+        const newPrice = prompt("Edit price:", item.price);
+        const newLocation = prompt("Edit location:", item.location);
+        const newContact = prompt("Edit contact:", item.contact);
+
+        if (newType && newPrice && newLocation && newContact) {
+          db.ref("listings/" + id).update({
+            type: newType,
+            price: parseInt(newPrice),
+            location: newLocation,
+            contact: newContact
+          });
+        }
+      };
+
+      const delBtn = document.createElement("button");
+      delBtn.textContent = "🗑️ Delete";
+      delBtn.className = "delete-btn";
+      delBtn.onclick = () => {
+        if (confirm("Delete this listing?")) {
+          db.ref("listings/" + id).remove();
+        }
+      };
+
+      div.appendChild(editBtn);
+      div.appendChild(delBtn);
+    }
+
+    listingsDiv.appendChild(div);
+  }
+});
+
+
+const donateBtn = document.getElementById('show-mpesa');
+  const mpesaNumber = document.getElementById('mpesa-number');
+
+  donateBtn.addEventListener('click', () => {
+    const isVisible = mpesaNumber.style.display === 'block';
+    mpesaNumber.style.display = isVisible ? 'none' : 'block';
+    donateBtn.textContent = isVisible ? 'Donate via M-Pesa' : 'Thank You!';
+  });
+  
+</script>
+</body>
+</html>
