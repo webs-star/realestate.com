@@ -780,24 +780,27 @@ const donateBtn = document.getElementById('show-mpesa');
   });
 
 
-
 window.addEventListener("load", async () => {
   const urlParams = new URLSearchParams(window.location.search);
-  const ref = urlParams.get("reference"); // Paystack returns ?reference=...
+  const ref = urlParams.get("reference"); // Paystack reference
 
   const pendingListing = localStorage.getItem("pendingTopListing");
+  if (!ref || !pendingListing) return;
 
-  if (ref && pendingListing) {
+  firebase.auth().onAuthStateChanged(async (user) => {
+    if (!user) {
+      alert("⚠️ You must be logged in to save your listing.");
+      return;
+    }
+
     const listingData = JSON.parse(pendingListing);
+    listingData.userId = user.uid; // required by your rules
 
     try {
-      // Save to topListings in Firebase
-      await db.ref("topListings").push(listingData);
-
-      // Clear localStorage
+      await db.ref("topListings").push(listingData); // now allowed by rules
       localStorage.removeItem("pendingTopListing");
 
-      // Remove reference from URL without reloading
+      // Clean the URL
       const cleanUrl = window.location.href.split("?")[0];
       window.history.replaceState({}, document.title, cleanUrl);
 
@@ -806,9 +809,8 @@ window.addEventListener("load", async () => {
       console.error("Error saving top listing:", err);
       alert("❌ Something went wrong while saving your listing. Please try again.");
     }
-  }
+  });
 });
-
 
 </script>
 </body>
