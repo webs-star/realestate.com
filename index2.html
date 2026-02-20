@@ -559,10 +559,11 @@ window.googleLogin = () => {
 
 
   
-<h2 style="text-align:center; color:#0056b3; margin-top:40px;">
-  🏘️ All Active Listings on RealPlot Connect
-</h2>
-<div id="listings"></div>
+<h2 style="text-align:center; color:#0056b3;">⭐ Top / Boosted Listings</h2>
+<div id="topListingsDiv"></div>
+
+<h2 style="text-align:center; color:#0056b3;">🟢 Free Listings</h2>
+<div id="freeListingsDiv"></div>
 
 
 
@@ -763,12 +764,13 @@ const renderListings = (nodeRef, container, isTop=false) => {
   });
 };
 
-// Render Free Listings
-renderListings(db.ref("listings"), document.getElementById("listings"), false);
 
-// Render Top Listings (optional: can render in a separate container)
-renderListings(db.ref("topListings"), document.getElementById("listings"), true);
+// Render Top / Boosted first
+renderListings(db.ref("topListings"), document.getElementById("topListingsDiv"), true);
 
+// Render Free listings below
+renderListings(db.ref("listings"), document.getElementById("freeListingsDiv"), false);
+  
 
 const donateBtn = document.getElementById('show-mpesa');
   const mpesaNumber = document.getElementById('mpesa-number');
