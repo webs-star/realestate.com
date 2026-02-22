@@ -680,7 +680,9 @@ window.googleLogin = () => {
 
 
 
-form.addEventListener("submit", async (e) => {
+
+
+ form.addEventListener("submit", async (e) => {
   e.preventDefault();
   if (!currentUserLatLng) return alert("⚠️ Location not available.");
 
@@ -691,6 +693,8 @@ form.addEventListener("submit", async (e) => {
   if (!/^\+254\d{9}$/.test(rawContact)) return alert("❌ Enter a valid Kenyan number");
 
   const listingLevel = document.getElementById("listingLevel").value;
+  const loading = document.getElementById("loading");
+  loading.style.display = "block";
 
   const listingData = {
     type: document.getElementById("type").value,
@@ -709,33 +713,46 @@ form.addEventListener("submit", async (e) => {
     level: listingLevel
   };
 
-  // Upload images to Cloudinary
+  // Upload images to Cloudinary with progress message
   const imageURLs = [];
+  loading.textContent = "⏳ Uploading images...";
+
+  let count = 0;
   for (const file of files) {
+    count++;
+    loading.textContent = `⏳ Uploading image ${count} of ${files.length}...`;
+
     const formData = new FormData();
     formData.append("file", file);
     formData.append("upload_preset", uploadPreset);
-    const res = await axios.post(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, formData);
+
+    const res = await axios.post(
+      `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
+      formData
+    );
+
     imageURLs.push(res.data.secure_url);
   }
+
+  loading.textContent = "✅ Images uploaded!";
   listingData.images = imageURLs;
 
-  if(listingLevel === "free") {
+  // Free listing path
+  if (listingLevel === "free") {
     await db.ref("listings").push(listingData);
     alert("✅ Free listing uploaded!");
     form.reset();
     previewContainer.innerHTML = "";
+    loading.style.display = "none";
     return;
   }
 
-  
+  // Boosted listing → Paystack
+  loading.textContent = "⏳ Redirecting to payment...";
+  localStorage.setItem("pendingTopListing", JSON.stringify(listingData));
 
-// For Top / Boosted: redirect to Paystack
-const paystackLink = "https://paystack.shop/pay/4pgenldoyc"; // replace with your link
-localStorage.setItem("pendingTopListing", JSON.stringify(listingData));
-  
-  // Redirect with ref
-  window.location.href = `${paystackLink}?ref=${Date.now()}`; 
+  const paystackLink = "https://paystack.shop/pay/4pgenldoyc"; // replace with your link
+  window.location.href = `${paystackLink}?ref=${Date.now()}`;
 });
 
   
