@@ -86,105 +86,155 @@
 
 
 
+<style>
+/* =========================
+   PAGE
+========================= */
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(135deg, #eef2f7, #f8fbff);
+  margin: 0;
+  padding: 30px 15px;
+}
 
-  <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #f4f6f9;
-      margin: 0;
-      padding: 20px;
-    }
-    h2 {
-      color: #2c3e50;
-      text-align: center;
-      margin-bottom: 15px;
-    }
-    form {
-      background: #fff;
-      padding: 20px;
-      border-radius: 10px;
-      max-width: 700px;
-      margin: auto;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    }
-    form input, form select, form textarea, form button {
-      width: 100%;
-      padding: 10px;
-      margin-top: 10px;
-      font-size: 14px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-    }
-    form button {
-      background-color: #007bff;
-      color: white;
-      border: none;
-      font-weight: bold;
-      cursor: pointer;
-    }
-    form button:hover {
-      background-color: #0056b3;
-    }
+/* =========================
+   HEADINGS
+========================= */
+h2 {
+  text-align: center;
+  font-size: 26px;
+  font-weight: 700;
+  color: #0056b3;
+  margin-bottom: 25px;
+}
 
-/* Upload preview thumbnails */
-#previewContainer img {
-  width: 180px;          /* bigger preview */
-  height: 180px;
-  object-fit: cover;
+/* =========================
+   UPLOAD CARD
+========================= */
+#uploadSection {
+  background: #ffffff;
+  max-width: 750px;
+  margin: auto;
+  padding: 35px;
+  border-radius: 18px;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08);
+  transition: 0.3s ease;
+}
+
+/* =========================
+   FORM ELEMENTS
+========================= */
+form input,
+form select,
+form textarea {
+  width: 100%;
+  padding: 14px 16px;
+  margin-top: 14px;
+  font-size: 15px;
   border-radius: 10px;
-  margin: 5px;
-  border: 1px solid #ccc;
+  border: 1px solid #e0e6ed;
+  background: #f9fbfd;
+  transition: all 0.25s ease;
+}
+
+form input:focus,
+form select:focus,
+form textarea:focus {
+  border-color: #0056b3;
+  background: #ffffff;
+  box-shadow: 0 0 0 4px rgba(0, 86, 179, 0.08);
+  outline: none;
+}
+
+form textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+/* =========================
+   SUBMIT BUTTON
+========================= */
+form button {
+  width: 100%;
+  margin-top: 20px;
+  padding: 15px;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: 12px;
+  border: none;
+  background: linear-gradient(135deg, #0056b3, #0aa83f);
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+form button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* =========================
+   LOADING
+========================= */
+#loading {
+  text-align: center;
+  font-weight: 600;
+  color: #ff7a00;
+  margin-top: 10px;
+  display: none;
+}
+
+/* =========================
+   IMAGE PREVIEW
+========================= */
+#previewContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+#previewContainer img {
+  width: 150px;
+  height: 150px;
+  object-fit: cover;
+  border-radius: 12px;
+  border: 1px solid #ddd;
   transition: transform 0.3s ease;
 }
+
 #previewContainer img:hover {
   transform: scale(1.05);
 }
 
-
-
-    
-    #loading {
-      text-align: center;
-      font-weight: bold;
-      color: #ff6600;
-      margin-top: 10px;
-      display: none;
-    }
-  
-
-#topListingsDiv,
-#freeListingsDiv {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr); /* 2 columns */
-  gap: 2px; /* smaller gap, enlarges cards */
-  justify-items: center; /* center cards in each column */
-  margin-top: 20px;
+/* =========================
+   LISTINGS GRID
+========================= */
+#listings {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 25px;
+  margin-top: 40px;
 }
 
+/* =========================
+   LISTING CARD
+========================= */
 .listing-card {
-  width: 100%;      /* fills the grid cell */
-  max-width: 500px; /* slightly larger max width */
+  width: 450px;
   padding: 15px;
   border-radius: 15px;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
   background: #fff;
   transition: transform 0.3s ease;
 }
 
-.image-column img {
-  width: 100%;
-  height: 320px;  /* larger images */
-  object-fit: cover;
-  border-radius: 12px;
-  transition: opacity 0.5s ease-in-out, transform 0.3s ease;
-}
-
-    
 .listing-card:hover {
   transform: translateY(-5px);
 }
 
-/* Image column */
+/* IMAGE COLUMN */
 .image-column {
   display: flex;
   flex-direction: column;
@@ -192,23 +242,33 @@
   margin-bottom: 12px;
 }
 
+.image-column img {
+  width: 100%;
+  height: 280px;
+  object-fit: cover;
+  border-radius: 12px;
+  transition: opacity 0.5s ease-in-out, transform 0.3s ease;
+}
 
 .image-column img:hover {
   transform: scale(1.02);
 }
 
-/* Text inside cards */
+/* TEXT INSIDE CARDS */
 .listing-card h4 {
-  font-size: 18px;       /* bigger title */
+  font-size: 18px;
   margin-bottom: 6px;
 }
+
 .listing-card p {
-  font-size: 16px;       /* bigger details */
+  font-size: 16px;
   margin: 3px 0;
 }
+
+/* DESCRIPTION */
 ul.description {
-  font-size: 15px;       /* larger description text */
-  max-height: 250px;     /* taller scroll area */
+  font-size: 15px;
+  max-height: 250px;
   overflow-y: auto;
   padding: 8px 12px;
   background: #f9f9f9;
@@ -217,29 +277,27 @@ ul.description {
   line-height: 1.5em;
 }
 
-/* Edit/Delete buttons */
+/* BUTTONS */
 .listing-card button {
   font-size: 15px;
   padding: 10px 14px;
   border-radius: 8px;
 }
+
 .edit-btn {
   background: #28a745;
   color: white;
   margin-right: 8px;
 }
+
 .delete-btn {
   background: #dc3545;
   color: white;
 }
 
-
-
-
-
-
-
-    
+/* =========================
+   REALPLOT NOTE
+========================= */
 #realplot-note {
   background-color: #f0f8ff;
   border-left: 6px solid #007acc;
@@ -249,60 +307,65 @@ ul.description {
   font-family: 'Segoe UI', sans-serif;
   font-size: 16px;
   border-radius: 10px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
+
 #realplot-note h2 {
   font-size: 22px;
   color: #005999;
   margin-bottom: 15px;
 }
+
 #realplot-note ul {
   padding-left: 20px;
 }
+
 #realplot-note li {
   margin-bottom: 10px;
   line-height: 1.5em;
 }
 
+/* =========================
+   AUTH SECTION
+========================= */
+#authSection {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  background-color: #f9f9f9;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  max-width: 300px;
+  font-family: Arial, sans-serif;
+}
 
- #authSection {
-    position: absolute;
-    top: 20px;
-    left: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    background-color: #f9f9f9;
-    padding: 25px;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    max-width: 300px;
-    font-family: Arial, sans-serif;
-  }
+#authSection input {
+  padding: 12px;
+  font-size: 18px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+}
 
-  #authSection input {
-    padding: 12px;
-    font-size: 18px;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-  }
+#authSection button {
+  padding: 12px;
+  font-size: 18px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
 
-  #authSection button {
-    padding: 12px;
-    font-size: 18px;
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-  }
+#authSection button:hover {
+  background-color: #45a049;
+}
 
-  #authSection button:hover {
-    background-color: #45a049;
-  }
-
-    
+</style>
     
     @media screen and (max-width: 800px) {
   #topListingsDiv,
